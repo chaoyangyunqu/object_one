@@ -1,0 +1,51 @@
+#服务配置
+server:
+  #端口号
+  port: 8088
+  #项目名
+  servlet:
+    context-path: /certSign
+  #tomcat配置，最大线程数是100，初始化线程是20,超时时间是5000ms
+  tomcat:
+    min-spare-threads: 20
+    max-threads: 100
+  connection-timeout: 5000
+spring:
+  mvc:
+#    # 支持jsp
+#    view:
+#      prefix: /
+#      suffix: .jsp
+    #扫描static目录下的所有文件，如js、img等
+    static-path-pattern: /static/**
+  # postgresql config
+  datasource:
+    url: jdbc:postgresql://127.0.0.1:5432/signature
+    username: postgres
+    password: 123456
+    driver-class-name: org.postgresql.Driver
+  #热部署生效
+  devtools:
+    restart:
+      enabled: true
+  #扫描html文件
+  thymeleaf:
+    prefix: classpath:/templates/
+    cache: false
+  #开启文件上传限制大小
+  servlet:
+    multipart:
+      max-file-size: 60MB
+      max-request-size: 300MB
+# mybatis config #
+mybatis:
+  config-locations: classpath:mybatis/mybatis-config.xml
+  mapper-locations: classpath:mybatis/mapper/*.xml
+  type-aliases-package: com.shenyue.certSign.model
+
+
+#新疆房产企业基本信息接口地址
+xinjiangca:
+  auth: https://xjcasite:1449/services/PDFSign/ReEntData/
+  ent: https://xjcasite:1449/services/PDFSign/EntSignPDF/
+  entMirle: https://xjcasite:1449/services/PDFSign/SignPagingSeal/

@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>csa</title>
+    <script type="text/javascript" src="./static/JtLib/jquery-easyui-1.4.5/jquery.min.js"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
+    <script language="VBScript" src="./static/JtLib/cert/GenKey.vs" type="text/VBScript"></script>
+    <script language="VBScript" src="./static/JtLib/cert/GenKey.old.vs" type="text/VBScript"></script>
+    <script language="javascript" src="./static/JtLib/cert/kpsdk.js" type="text/javascript"></script>
+    <script language="javascript" src="./static/JtLib/cert/raclient.js" type="text/javascript"></script>
+    <script language="javascript" src="./static/JtLib/cert/capicom.js" type="text/javascript"></script>
+    <script language="javascript" src="./static/JtLib/cert/koal.js" type="text/javascript"></script>
+
+    <script language="javascript">
+        try {
+            var tmp = new ActiveXObject("CEnroll.CEnroll.2");
+            document.writeln("<OBJECT	classid='clsid:127698e4-e730-4e5c-a2b1-21490a70c8a1' id=cenroll></OBJECT>");
+        } catch(err) {
+            document.writeln("<OBJECT	classid='clsid:43f8f289-7a20-11d0-8f06-00c04fc295e1' id=cenroll></OBJECT>");
+        }
+    </script>
+
+    <OBJECT align=baseline classid="clsid:FE40E461-167A-4AAB-A91F-3F7168BD3EFB" height=1 id=oKoalCert style="LEFT: 0px; TOP: 0px"
+            type=application/x-oleobject width=1 border=0 VIEWASTEXT> </OBJECT>
+
+    <OBJECT align=baseline classid="clsid:E819068A-2853-45A8-BBFB-B1CDE91F79E5" height=1 id=oCertX style="LEFT: 0px; TOP: 0px"
+            type=application/x-oleobject width=1 border=0 VIEWASTEXT> </OBJECT>
+
+
+    <OBJECT id=xjcaFgwATLLib align="CENTER" WIDTH=0 HEIGHT=0 classid="CLSID:1A90914C-7DA9-4638-B9CF-838F9DDF2AD1"></OBJECT>
+    <object id="HDChkDev" classid="clsid:179C11E1-4772-4988-88BE-8E64AA99F528">
+        <param name="DoubleBuffered" value="0">
+        <param name="Enabled" value="-1">
+        <param name="Visible" value="-1">
+    </object>
+
+    <script type="text/javascript">
+        var csp = "CIDC Cryptographic Service Provider v1.0.0";
+
+        oCertX.SmartToken = 0;
+        oCertX.KeySize = 1024;
+        oCertX.NotUseFileSlot = true;
+        oCertX.UnusedSlotOnly = false;
+        var nTokenCount = oCertX.TokenCount;
+        var nToken = -1;
+        for (var x = 0; x < nTokenCount; x++) {
+            var TokenInfo = oCertX.TokenInfo(x);
+            var hd = "密钥：1024位 | SZD23B10 加密模块";
+
+            if (TokenInfo.indexOf(hd) != -1) {
+                nToken = x;
+            }
+
+        }
+        //弹出证书的就绪情况
+        function LoadKeys() {
+            if (nTokenCount == 0 || nToken == -1) {
+                return false;
+            }
+            return true;
+        }
+        //生成请求
+        function GenerateRequest() {
+            if (nTokenCount < 1) {
+                alert("没有找到任何设备！");
+            }
+            if (nToken == -1) {
+                alert("未检测到华大KEY!");
+            } else {
+                var req = GenRequestByEAClient(nToken);
+                if (req.length == 0) {
+                    alert("证书请求产生失败");
+                    return "";
+                } else {
+                    return deleteCrlfAndBlank(req);
+                }
+            }
+        }
+
+        //产生证书请求的base64编码
+        function deleteCrlfAndBlank(srcValue) {
+            if (srcValue == null || srcValue.length == 0)
+                return "";
+
+            filterValue = "\r\n "; // Characters stripped out
+            var returnString = "";
+            for (var i = 0; i < srcValue.length; i++) {
+                var c = srcValue.charAt(i);
+                if (filterValue.indexOf(c) == -1)
+                    returnString += c;
+            }
+            return returnString;
+        }
+
+        //安装证书
+
+        function InstallLraInfo(lraInfoValue) {
+            var ret = InstallCertLraInfo(0, 0, nToken, lraInfoValue);
+            if (ret == 0) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+
+        function newCerts() {
+            var zsreq;
+            if (LoadKeys()) {
+                zsreq = GenerateRequest();
+                if ("" !== zsreq) {
+                    var dataJson = {
+                        "ignoreUserIdNo": "y",
+                        "userName":"阿勒泰华丽房地产开发有限公司01",
+                        "userState": "新疆",
+                        "userCity": "阿勒泰",
+                        "userPhone":"91522720MA6HHR5Dwerwer",
+                        "userOrg": "经济开发区",
+                        "userCountry": "CN",
+                        "userCrey": "00",
+                        "userCertTypeCode":2,
+                        "userCertType": "entCert2",
+                        "req": zsreq
+                    }
+                    alert('开始发证')
+                    $.ajax({
+                        type:"POST", //请求方式
+                        url:"CA/ra/dealCertSign.serivce", //请求的url地址
+                        contentType: "application/json;charset=UTF-8",
+                        dataType:"json", //返回格式为json
+                        async:true,//请求是否异步，默认为异步，这也是ajax重要特性
+                        data:JSON.stringify(dataJson), //参数值
+
+                        beforeSend:function(){
+                            //请求前的处理
+                        },
+                        success:function(data){
+                            //请求成功时处理
+                            if (100001 == data.status) {
+                                console.log("证书返回:",data.results)
+                                var ret = InstallLraInfo(data.results.content);
+                                console.log("安装情况:",ret)
+                                if (ret) {
+                                    alert("发证成功!");
+                                }
+                            }else{
+                                console.log(data)
+                            }
+                        },
+                        complete:function(){
+                            //请求完成的处理
+                        },
+                        error:function(){
+                            //请求出错处理
+                            alert('请求出错')
+                        }
+                    });
+                }
+            }
+        }
+
+        function test() {
+            alert('开始发证')
+            var data = {
+                "req": "2342"
+            }
+            $.ajax({
+                type:"POST", //请求方式
+                url:"CA/ra/dealCertSign.serivce", //请求的url地址
+                contentType: "application/json;charset=UTF-8",
+                dataType:"json", //返回格式为json
+                async:true,//请求是否异步，默认为异步，这也是ajax重要特性
+                data:JSON.stringify(data), //参数值
+
+                beforeSend:function(){
+                    //请求前的处理
+                },
+                success:function(data){
+                    //请求成功时处理
+                    console.log(data)
+                },
+                complete:function(){
+                    //请求完成的处理
+                },
+                error:function(){
+                    //请求出错处理
+                    alert('请求出错')
+                }
+            });
+            // axios({
+            //     method: 'POST',
+            //     url: 'CA/ra/dealCertSign.serivce',
+            //     // 请求头
+            //     headers: {
+            //         'Content-Type': 'application/json;charset=UTF-8',
+            //     },
+            //     // 响应格式 {'arraybuffer','blob','document','json,'text','strem'}
+            //     responseType: 'json',//dufault
+            //     data: {
+            //         req: '22'
+            //     }
+            // })
+            //     .then(function (response) {
+            //         console.log(response);
+            //     })
+            //     .catch(function (error) {
+            //         console.log(error);
+            //     });
+        }
+    </script>
+</head>
+<body>
+<div align="center">
+    <br> <br>
+    <input type="button" value="测试新办证书" onclick="newCerts()" />
+    <br> <br>
+</div>
+</body>
+</html>
