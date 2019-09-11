@@ -1,7 +1,7 @@
 #服务配置
 server:
   #端口号
-  port: 8088
+  port: 8085
   #项目名
   servlet:
     context-path: /certSign
@@ -20,9 +20,9 @@ spring:
     static-path-pattern: /static/**
   # postgresql config
   datasource:
-    url: jdbc:postgresql://127.0.0.1:5432/signature
-    username: postgres
-    password: 123456
+    url: jdbc:postgresql://192.168.5.112:5432/xinjiangca
+    username: xinjiangca
+    password: xinjiangca
     driver-class-name: org.postgresql.Driver
   #热部署生效
   devtools:
@@ -49,3 +49,7 @@ xinjiangca:
   auth: https://xjcasite:1449/services/PDFSign/ReEntData/
   ent: https://xjcasite:1449/services/PDFSign/EntSignPDF/
   entMirle: https://xjcasite:1449/services/PDFSign/SignPagingSeal/
+
+#日志配置
+logging.config:
+  classpath:logback.xml
