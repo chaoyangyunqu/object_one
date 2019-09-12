@@ -29,9 +29,21 @@ public class SignContractDTO {
 
     /** 签章位置 */
     private String picPoints;
-    
-    /** 统计位置 */
-    private int pointCount;
+
+    /** 个人名称 */
+    private String personName;
+
+    /** 个人电话 */
+    private String personPhone;
+
+    /** 个人身份证 */
+    private String personIdCard;
+
+    /** 个人签署页码 */
+    private String personPageNums;
+
+    /** 个人签署坐标位置 */
+    private String personPicPoints;
 
     public String getWqhth() {
         return wqhth;
@@ -73,14 +85,6 @@ public class SignContractDTO {
         this.picPoints = picPoints;
     }
 
-    public int getPointCount() {
-        return pointCount;
-    }
-
-    public void setPointCount(int pointCount) {
-        this.pointCount = pointCount;
-    }
-
     public String getSerial() {
         return serial;
     }
@@ -95,5 +99,45 @@ public class SignContractDTO {
 
     public void setSubject(String subject) {
         this.subject = subject;
+    }
+
+    public String getPersonPageNums() {
+        return personPageNums;
+    }
+
+    public void setPersonPageNums(String personPageNums) {
+        this.personPageNums = personPageNums;
+    }
+
+    public String getPersonPicPoints() {
+        return personPicPoints;
+    }
+
+    public void setPersonPicPoints(String personPicPoints) {
+        this.personPicPoints = personPicPoints;
+    }
+
+    public String getPersonName() {
+        return personName;
+    }
+
+    public void setPersonName(String personName) {
+        this.personName = personName;
+    }
+
+    public String getPersonPhone() {
+        return personPhone;
+    }
+
+    public void setPersonPhone(String personPhone) {
+        this.personPhone = personPhone;
+    }
+
+    public String getPersonIdCard() {
+        return personIdCard;
+    }
+
+    public void setPersonIdCard(String personIdCard) {
+        this.personIdCard = personIdCard;
     }
 }

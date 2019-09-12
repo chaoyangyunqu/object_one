@@ -20,9 +20,9 @@ import org.slf4j.LoggerFactory;
  * @author: luofuwei
  * @date: wrote on 2019/9/8
  */
-public class ServiceUtils {
+public class RAUtils {
 
-    private final Logger logger = LoggerFactory.getLogger(ServiceUtils.class);
+    private final Logger logger = LoggerFactory.getLogger(RAUtils.class);
 
     /** 进行RA注册 */
     public DataResult getUserId(RaUserBO raUserBO){

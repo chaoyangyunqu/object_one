@@ -196,41 +196,29 @@ public class XinjiangCAServiceImpl{
             String baseURI = "";
             type = signContractDTO.getType();
             logger.info("userType:{}",type);
-            if (0 == type) {
-                dataResult.setError("未选择类型");
-                return (T) dataResult;
-            } else if (1 == type) {
-                // 个人签署
-                dataResult.setMsg("个人签署功能暂未开通");
-                return (T) dataResult;
-            } else if (2 == type) {
-                // 开发企业
+            if (2 == type) {
                 // 页码
                 String pageNums = signContractDTO.getPageNums();
                 // 企业章大小
                 String picSizes = "(100,100)";
                 // 盖章位置
                 String picPoints = signContractDTO.getPicPoints();
-                // 盖章
+                // 盖章信息
                 dataJsonStr = "{'inputPDF':'"
                         + base64String.trim()
                         + "','CertSN':'"+certSNDec+"','PageNums':'" + pageNums + "','picSizes':'"+picSizes+"','picPoints':'"+picPoints+"','token':'"+token+"'}";
-                logger.info("盖章信息:{}",dataJsonStr);
                 baseURI = entBaseUri;
                 isMirle = true;
                 logger.info("Test盖章信息:{}",dataJsonStr);
                 logger.info("Test请求URL:{}",baseURI);
 
             } else if (3 == type) {
-                // 房管局
                 // 页码
                 String pageNums = signContractDTO.getPageNums();
                 // 企业章大小
                 String picSizes = "(100,100)";
-
                 // 盖章位置
                 String picPoints = signContractDTO.getPicPoints();
-                //8719532489967665218
                 // 盖章
                 dataJsonStr = "{'inputPDF':'"
                         + base64String.trim()

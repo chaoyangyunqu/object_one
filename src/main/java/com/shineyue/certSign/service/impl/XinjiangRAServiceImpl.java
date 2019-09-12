@@ -7,7 +7,7 @@ import com.shineyue.certSign.model.po.CertMsgPO;
 import com.shineyue.certSign.model.po.CertUserPO;
 import com.shineyue.certSign.model.vo.RaUserVO;
 import com.shineyue.certSign.service.IXinjiangRAService;
-import com.shineyue.certSign.utils.ServiceUtils;
+import com.shineyue.certSign.utils.RAUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -49,8 +49,8 @@ public class XinjiangRAServiceImpl implements IXinjiangRAService {
         try{
 
             // 获取RA远程服务器返回注册的userId
-            ServiceUtils serviceUtils = new ServiceUtils();
-            dataResult = serviceUtils.getUserId(raUserBO);
+            RAUtils RAUtils = new RAUtils();
+            dataResult = RAUtils.getUserId(raUserBO);
             // 注册失败
             if (100001 != dataResult.getStatus()) {
                 return (T) dataResult;
@@ -58,7 +58,7 @@ public class XinjiangRAServiceImpl implements IXinjiangRAService {
             // 注册成功
             int userId = (int) dataResult.getResults();
             // 审核发证
-            dataResult = serviceUtils.reviewSign(userId,raUserBO);
+            dataResult = RAUtils.reviewSign(userId,raUserBO);
             // 发证失败
             if (100001 != dataResult.getStatus()) {
                 return (T) dataResult;
