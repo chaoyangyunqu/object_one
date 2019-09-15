@@ -15,6 +15,9 @@ import koal.ra.caclient.ReqType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+
 /**
  * @Description: TODO 业务层工具代码
  * @author: luofuwei
@@ -37,8 +40,8 @@ public class RAUtils {
 
 //            String kraPath = URLDecoder.decode(this.getClass().getClassLoader().getResource("kra.properties").getPath(),"utf-8");
 //            String kra2Path = URLDecoder.decode(this.getClass().getClassLoader().getResource("kra2.properties").getPath(),"utf-8");
-            String kraPath = System.getProperty("user.dir") + "/kra.properties";
-            String kra2Path = System.getProperty("user.dir") + "/kra2.properties";
+            String kraPath = System.getProperty("user.dir") + "/config/kra.properties";
+            String kra2Path = System.getProperty("user.dir") + "/config/kra2.properties";
             logger.info("kra路径:{}",kraPath);
             logger.info("kra2路径:{}",kra2Path);
 
@@ -104,8 +107,8 @@ public class RAUtils {
 
 //            String kraPath = URLDecoder.decode(this.getClass().getClassLoader().getResource("kra.properties").getPath(),"utf-8");
 //            String kra2Path = URLDecoder.decode(this.getClass().getClassLoader().getResource("kra2.properties").getPath(),"utf-8");
-            String kraPath = System.getProperty("user.dir") + "/kra.properties";
-            String kra2Path = System.getProperty("user.dir") + "/kra2.properties";
+            String kraPath = System.getProperty("user.dir") + "/config/kra.properties";
+            String kra2Path = System.getProperty("user.dir") + "/config/kra2.properties";
             logger.info("kra路径:{}",kraPath);
             logger.info("kra2路径:{}",kra2Path);
             int userCertTypeCode = raUserBO.getUserCertTypeCode();
@@ -166,7 +169,7 @@ public class RAUtils {
 
             return dataResult;
 
-        } catch ( RaApiException  e ) {
+        } catch ( RaApiException e ) {
             dataResult.setStatus(200004);
             dataResult.setMsg("Ra注申请失败");
             dataResult.setError(e.getMessage());

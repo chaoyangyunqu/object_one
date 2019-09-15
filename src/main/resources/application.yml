@@ -44,15 +44,23 @@ mybatis:
   type-aliases-package: com.shenyue.certSign.model
 
 
-#新疆房产企业基本信息接口地址
+#新疆CA接口地址
+#https://xjcasite:1449/services/PDFSign/ReEntData/
+#http://124.117.245.72:18081/SealPic_WebService/services/PDFSign/ReEntData/
 xinjiangca:
   auth: https://xjcasite:1449/services/PDFSign/ReEntData/
   ent: https://xjcasite:1449/services/PDFSign/EntSignPDF/
   entMirle: https://xjcasite:1449/services/PDFSign/SignPagingSeal/
+  person: https://xjcasite:1449/services/PDFSign/PushPDFData/
+#个人签署回调地址(本系统)
+  signCallbackURL: http://111.85.14.153:8085/certSign/CA/ca/dealSignCallbackPicOfPDF.serivce
+
+#新疆房产网签合同推送接口
+xinjiangfc:
+  fcSignCallbackURL: http://192.168.10.33:8088/PUBLIC/ftp/dealSignCallbackPicOfPDF.serivce
 
 #日志配置
 logging.config:
   classpath:logback.xml
 
-#logging:
-#  config: classpath:logback.xml
+
