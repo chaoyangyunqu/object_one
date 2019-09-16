@@ -61,6 +61,6 @@ xinjiangfc:
 
 #日志配置
 logging.config:
-  classpath:logback.xml
+  classpath: logback.xml
 
 
