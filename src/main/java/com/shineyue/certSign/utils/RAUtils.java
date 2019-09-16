@@ -87,7 +87,7 @@ public class RAUtils {
 
             return dataResult;
 
-        } catch ( RaApiException e) {
+        } catch ( RaApiException  e) {
             dataResult.setStatus(200004);
             dataResult.setMsg("Ra注申请失败");
             dataResult.setError(e.getMessage());

@@ -37,9 +37,14 @@ public class XinjiangCAController {
 
         DataResult dataResult = new DataResult();
 
-        logger.info("收到来自[{}]的请求", IpAddressUtil.getIpAddress(request));
+        logger.info("收到来自[{}]的请求（个人签署回调）", IpAddressUtil.getIpAddress(request));
         try {
-            logger.info("CA证书回调信息:{}",signCallbackDTO.toString());
+            String inputPDF = signCallbackDTO.getInputPDF();
+            if (null != inputPDF && !"".equals(inputPDF)) {
+                logger.info("存在inputPDF");
+            }else {
+                logger.info("不存在inputPDF:{}",signCallbackDTO.toString());
+            }
             dataResult = xinjiangCAService.dealSignCallbackPicOfPDF(signCallbackDTO);
             // 文件存放路径
             String basePath = System.getProperty("user.dir") + "/signPDF";
@@ -63,20 +68,34 @@ public class XinjiangCAController {
     }
 
     @PostMapping(value = "CA/ca/getPicOfPDF.serivce")
-    public DataResult test(@RequestBody SignContractDTO signContractDTO, HttpServletRequest request){
+    public DataResult getPicOfPDF(@RequestBody SignContractDTO signContractDTO, HttpServletRequest request){
 
         DataResult dataResult = new DataResult();
 
         logger.info("收到来自[{}]的请求", IpAddressUtil.getIpAddress(request));
         try {
-            String serial = "" ;
-            serial = signContractDTO.getSerial();
-            logger.info("证书序列号:{}",serial);
-            if ("".equals(serial)) {
+            String wqhth = signContractDTO.getWqhth();
+            String serial = signContractDTO.getSerial();
+            String inputPDF = signContractDTO.getInputPDF();
+            if (null == wqhth || "".equals(wqhth)) {
+                dataResult.setMsg("未检查到合同号");
+                dataResult.setError("请求参数错误");
+                return  dataResult;
+            }
+            if (null == serial || "".equals(serial)) {
                 dataResult.setMsg("未检查到证书序列号");
                 dataResult.setError("请求参数错误");
                 return  dataResult;
             }
+            if (null == inputPDF || "".equals(inputPDF)) {
+                dataResult.setMsg("未检查到合同文件");
+                dataResult.setError("请求参数错误");
+                return  dataResult;
+            }
+            logger.info("合同号:{}",serial);
+            logger.info("证书序列号:{}",serial);
+            logger.info("个人页数:{}",signContractDTO.getPersonPageNums());
+            logger.info("个人坐标:{}",signContractDTO.getPersonPicPoints());
             dataResult = xinjiangCAService.getPicOfPDF(signContractDTO);
 
         } catch ( Exception e ) {
@@ -86,7 +105,7 @@ public class XinjiangCAController {
     }
 
     @PostMapping(value = "CA/ca/picOfPDFTest.serivce")
-    public DataResult getPicOfPDF(@RequestBody MultipartFile file , SignContractDTO signContractDTO ) {
+    public DataResult picOfPDFTest(@RequestBody MultipartFile file , SignContractDTO signContractDTO ) {
 
         DataResult dataResult = new DataResult();
         try {
