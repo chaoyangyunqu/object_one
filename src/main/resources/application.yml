@@ -29,8 +29,8 @@ spring:
       max-request-size: 300MB
   # 指定执行环境
   profiles:
-    active: #spring.profiles.active#
-#    active: dev
+#    active: #spring.profiles.active#
+    active: dev
 # mybatis config #
 mybatis:
   config-locations: classpath:mybatis/mybatis-config.xml
