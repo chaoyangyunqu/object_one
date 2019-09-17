@@ -1,0 +1,15 @@
+#公司内部测试环境配置
+spring:
+  # postgresql config
+  datasource:
+    url: jdbc:postgresql://192.168.5.112:5432/xinjiangca
+    username: xinjiangca
+    password: xinjiangca
+    driver-class-name: org.postgresql.Driver
+xinjiangca:
+  #个人签署回调地址(本系统)
+  signCallbackURL: http://222.222.216.74:10246/certSign/CA/ca/dealSignCallbackPicOfPDF.serivce
+
+#新疆房产网签合同推送接口
+xinjiangfc:
+  fcSignCallbackURL: http://192.168.5.198:8083/PUBLIC/ftp/dealSignCallbackPicOfPDF.serivce
