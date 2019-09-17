@@ -279,7 +279,6 @@
                         </goals>
                         <configuration>
                             <!--将配置文件打包到指定位置-->
-                            <!--<outputDirectory>${project.build.directory}/config</outputDirectory>-->
                             <outputDirectory>${project.build.directory}/config</outputDirectory>
                             <useDefaultDelimiters>false</useDefaultDelimiters>
                             <delimiters>
@@ -287,7 +286,7 @@
                             </delimiters>
                             <resources>
                                 <resource>
-                                    <directory>src/main/resources/</directory>
+                                    <directory>src/main/resources</directory>
                                     <filtering>true</filtering>
                                     <includes>
                                         <include>*.properties</include>
