@@ -1,0 +1,16 @@
+#开发环境配置
+spring:
+  # postgresql config
+  datasource:
+    url: jdbc:postgresql://127.0.0.1:5432/signature
+    username: postgres
+    password: 123456
+    driver-class-name: org.postgresql.Driver
+
+xinjiangca:
+  #个人签署回调地址(本系统)此处为端口映射
+  signCallbackURL: http://111.85.14.153:8085/certSign/CA/ca/dealSignCallbackPicOfPDF.serivce
+
+#新疆房产网签合同推送接口
+xinjiangfc:
+  fcSignCallbackURL: http://192.168.10.33:8088/PUBLIC/ftp/dealSignCallbackPicOfPDF.serivce

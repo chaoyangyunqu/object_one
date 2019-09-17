@@ -1,0 +1,16 @@
+#华为云生产环境配置
+spring:
+  # postgresql config
+  datasource:
+    url: jdbc:postgresql://192.168.1.251:5432/xinjiangca
+    username: xinjiangca
+    password: xinjiangca
+    driver-class-name: org.postgresql.Driver
+
+xinjiangca:
+  #个人签署回调地址(本系统)
+  signCallbackURL: http://49.4.124.214:8085/certSign/CA/ca/dealSignCallbackPicOfPDF.serivce
+
+#新疆房产网签合同推送接口
+xinjiangfc:
+  fcSignCallbackURL: http://10.105.99.10:8083/PUBLIC/ftp/dealSignCallbackPicOfPDF.serivce

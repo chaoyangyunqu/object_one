@@ -64,6 +64,13 @@
             <version>3.3.2</version>
         </dependency>
 
+        <!-- https://mvnrepository.com/artifact/org.projectlombok/lombok -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+        </dependency>
+
+
         <!--参数校验-->
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -216,7 +223,40 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
-
+    <!--引入多环境配置-->
+    <profiles>
+        <!-- 公司内部测试环境 -->
+        <profile>
+            <id>internalTest</id>
+            <properties>
+                <spring.profiles.active>internalTest</spring.profiles.active>
+            </properties>
+        </profile>
+        <!-- 华为云测试环境 -->
+        <profile>
+            <id>huaweiCloudTest</id>
+            <properties>
+                <spring.profiles.active>huaweiCloudTest</spring.profiles.active>
+            </properties>
+        </profile>
+        <!-- 开发环境 -->
+        <profile>
+            <id>dev</id>
+            <properties>
+                <spring.profiles.active>dev</spring.profiles.active>
+            </properties>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+        </profile>
+        <!-- 生产环境 -->
+        <profile>
+            <id>release</id>
+            <properties>
+                <spring.profiles.active>release</spring.profiles.active>
+            </properties>
+        </profile>
+    </profiles>
     <build>
         <plugins>
             <plugin>
@@ -228,6 +268,7 @@
                 </configuration>
             </plugin>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-resources-plugin</artifactId>
                 <executions>
                     <execution>
@@ -237,19 +278,26 @@
                             <goal>copy-resources</goal>
                         </goals>
                         <configuration>
+                            <!--将配置文件打包到指定位置-->
+                            <!--<outputDirectory>${project.build.directory}/config</outputDirectory>-->
                             <outputDirectory>${project.build.directory}/config</outputDirectory>
+                            <useDefaultDelimiters>false</useDefaultDelimiters>
+                            <delimiters>
+                                <delimiter>#</delimiter>
+                            </delimiters>
                             <resources>
                                 <resource>
-                                    <directory>src/main/resources</directory>
+                                    <directory>src/main/resources/</directory>
+                                    <filtering>true</filtering>
                                     <includes>
                                         <include>*.properties</include>
-                                        <include>*.yml</include>
+                                        <include>application.yml</include>
+                                        <!--多环境动态切换yml配置 示例：使用mvn install -P 【环境名】打包-->
+                                        <include>application-${spring.profiles.active}.yml</include>
                                     </includes>
-                                    <filtering>true</filtering>
                                 </resource>
                             </resources>
                         </configuration>
-
                     </execution>
                 </executions>
             </plugin>

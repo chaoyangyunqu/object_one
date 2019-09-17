@@ -2,6 +2,7 @@ package com.shineyue.certSign.service.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+//import com.shineyue.certSign.event.DealPersonSignEvent;
 import com.shineyue.certSign.model.DataResult;
 import com.shineyue.certSign.model.dto.SignCallbackDTO;
 import com.shineyue.certSign.model.dto.SignContractDTO;
@@ -12,16 +13,23 @@ import com.shineyue.certSign.utils.HttpService;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.annotation.Resource;
 import java.io.File;
 import java.io.OutputStreamWriter;
 import java.math.BigInteger;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @PackageName: com.shineyue.certSign.service
@@ -32,6 +40,15 @@ import java.nio.charset.StandardCharsets;
 @Service
 public class XinjiangCAServiceImpl{
     private final Logger logger = LoggerFactory.getLogger(getClass());
+
+    // 存放每一份合同对应多个买受人签章信息
+    public static final Map<String, List<SignContractDTO>> PERSONSIGN = new ConcurrentHashMap<String,List<SignContractDTO>>();
+    // 统计盖章次数
+    public static final Map<String, Integer> PERSONSIGNCOUNT = new ConcurrentHashMap<String, Integer>();
+
+    // 注入发布事件
+    @Resource
+    ApplicationEventPublisher eventPublisher;
 
     /** token */
     private String token = "9e477b99-f958-4688-2fc6-ccf670861265";
@@ -67,6 +84,7 @@ public class XinjiangCAServiceImpl{
             dataResult.setStatus(100000);
             dataResult.setMsg("请求成功!");
             String dataJson = JSON.toJSONString(signCallbackDTO);
+            logger.info("房屋交易网签推送地址：{}",fcSignCallbackURL);
             String returnStr = HttpService.doPost(fcSignCallbackURL,dataJson);
         } catch (Exception e) {
             dataResult.setStatus(200001);
@@ -258,9 +276,11 @@ public class XinjiangCAServiceImpl{
                     DataResult dataResult1 = HttpConnetUtils.httpConnet(signContractDTO1,entMirleBaseUri,dataJsonMirleStr);
                     SignContractDTO signContractDTO2 = (SignContractDTO) dataResult1.getResults();
                     ConvertUtil.base64StringToFile(signContractDTO2.getInputPDF(),filePath);
-                    // 个人签署
                     logger.info("企业骑缝章已完成");
+                    // 发布个人签署事件
+//                    eventPublisher.publishEvent(new DealPersonSignEvent(this,signContractDTO2));
                     dataResult1 = dealPersonSign(signContractDTO2);
+//                    dataResult1.setMsg("企业普通章与骑缝章已完成，请进行个人签署");
                     return (T) dataResult1;
                 }
                 ConvertUtil.base64StringToFile(signContractDTO1.getInputPDF(),filePath);
@@ -275,6 +295,7 @@ public class XinjiangCAServiceImpl{
 
     public <T> T dealPersonSign(SignContractDTO signContractDTO) {
         DataResult dataResult = new DataResult();
+
         logger.info("个人签署开始操作,请等待...");
         try {
 
@@ -288,15 +309,16 @@ public class XinjiangCAServiceImpl{
             String pageNums = signContractDTO.getPersonPageNums();
             // 企业章大小
             String picSizes = "(60,60)";
-            // 盖章位置
-            String picPoints = signContractDTO.getPersonPicPoints();
             // pdf信息
             String tempPDF = signContractDTO.getInputPDF();
             String PDFJsonStr = "{'inputPDF':'" + tempPDF;
+            // 盖章位置
+            String picPoints = signContractDTO.getPersonPicPoints();
             // 参数信息
             String pramaJsonStr = "','wqhth':'"+wqhth+"','UserInfo':{'name':'"+signContractDTO.getPersonName()+"','phone':'"+signContractDTO.getPersonPhone()+"','idCard':'"+signContractDTO.getPersonIdCard()+"'},"
                     + "'SignInfo':{'PageNums':'"+pageNums+"','picSizes':'"+picSizes+"','picPoints':'"+picPoints+"'},'token':'"+token+"','EntInfo':{'entCode':'"+certSNDec+"','entName':'"
                     + signContractDTO.getSubject()+"'},'callbackUrl':'"+signCallbackURL+"'}";
+
             // 盖章信息
             String dataJsonStr = PDFJsonStr + pramaJsonStr ;
             if ("".equals(tempPDF)) {
@@ -306,6 +328,7 @@ public class XinjiangCAServiceImpl{
             }
             logger.info("个人盖章参数信息:{}",pramaJsonStr);
             logger.info("个人请求URL:{}",person);
+            logger.info("房屋交易网签推送URL:{}",signCallbackURL);
 
             dataResult = HttpConnetUtils.httpConnet(signContractDTO,person,dataJsonStr);
             if (100001 != dataResult.getStatus()) {
@@ -337,13 +360,15 @@ public class XinjiangCAServiceImpl{
             String certSNHex = picBindCertCNVO.getSerial();
             // CertSN 企业唯一SN值 需要将获取的16进制转换成10进制
             String certSNDec = new BigInteger(certSNHex, 16).toString(10);
+            // 企业联系人手机号
+            String entPhone = "18371125756";
             String str = "{'CertSN':'" + certSNDec
-                    + "','EntUserName':'"+userName+"','EntSealData':'" + entImgData
+                    + "','EntUserName':'"+userName+"','EntPhone':'"+entPhone+"','EntSealData':'" + entImgData
                     + "','EntSealType':'" + entSealType + "','token':'"+token+"'}";
 
             logger.info("authBaseUri:{}",authBaseUri);
-            logger.info("token:{}",token);
-            logger.info("certCN信息:{}",certSNDec);
+            logger.info("注册信息:{}",str);
+
             URL targetUrl = new URL(authBaseUri);
             HttpURLConnection httpConnection = (HttpURLConnection) targetUrl
                     .openConnection();
@@ -384,11 +409,6 @@ public class XinjiangCAServiceImpl{
 
             if (resJsonObj.getString("SUCCESS").equals("TRUE")) {
                 logger.info("企业注册成功");
-                logger.info("信息如下：{}",resJsonObj);
-                String res = resJsonObj.getString("BASEDATA"); // 返回唯一编码值
-                // 用于其他接口参数  certSN
-                logger.info("企业唯一号:" + res);
-
             }
             httpConnection.disconnect();
             logger.info("**************************调用ReEnterpriseWebService接口结束*******************");
