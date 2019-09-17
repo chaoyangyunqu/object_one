@@ -12,6 +12,9 @@ public class PicBindCertCNVO {
     /** 序列号/唯一号 */
     private String serial;
 
+    /** 企业联系人手机号 */
+    private String entPhone;
+
     public String getSubject() {
         return subject;
     }
@@ -28,11 +31,20 @@ public class PicBindCertCNVO {
         this.serial = serial;
     }
 
+    public String getEntPhone() {
+        return entPhone;
+    }
+
+    public void setEntPhone(String entPhone) {
+        this.entPhone = entPhone;
+    }
+
     @Override
     public String toString() {
         return "PicBindCertCNVO{" +
                 "subject='" + subject + '\'' +
                 ", serial='" + serial + '\'' +
+                ", entPhone='" + entPhone + '\'' +
                 '}';
     }
 }

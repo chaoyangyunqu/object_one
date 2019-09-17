@@ -164,6 +164,11 @@ public class XinjiangCAController {
                 dataResult.setMsg("未获取到serial参数！");
                 return dataResult;
             }
+            String entPhone = picBindCertCNVO.getEntPhone();
+            if (null == entPhone || "".equals(entPhone)) {
+                dataResult.setMsg("未获取到entPhone参数！");
+                return dataResult;
+            }
             logger.info("参数验证通过");
             dataResult = xinjiangCAService.getCertSN(file,picBindCertCNVO);
         } catch (Exception e) {

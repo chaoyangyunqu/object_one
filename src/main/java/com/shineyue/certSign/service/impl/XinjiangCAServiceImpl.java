@@ -361,7 +361,7 @@ public class XinjiangCAServiceImpl{
             // CertSN 企业唯一SN值 需要将获取的16进制转换成10进制
             String certSNDec = new BigInteger(certSNHex, 16).toString(10);
             // 企业联系人手机号
-            String entPhone = "18371125756";
+            String entPhone = picBindCertCNVO.getEntPhone();
             String str = "{'CertSN':'" + certSNDec
                     + "','EntUserName':'"+userName+"','EntPhone':'"+entPhone+"','EntSealData':'" + entImgData
                     + "','EntSealType':'" + entSealType + "','token':'"+token+"'}";
