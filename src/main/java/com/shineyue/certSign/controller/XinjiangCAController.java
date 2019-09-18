@@ -6,7 +6,6 @@ import com.shineyue.certSign.model.dto.SignContractDTO;
 import com.shineyue.certSign.model.vo.PicBindCertCNVO;
 import com.shineyue.certSign.service.impl.XinjiangCAServiceImpl;
 import com.shineyue.certSign.utils.ConvertUtil;
-import com.shineyue.certSign.utils.HttpService;
 import com.shineyue.certSign.utils.IpAddressUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,7 +44,6 @@ public class XinjiangCAController {
             }else {
                 logger.info("不存在inputPDF:{}",signCallbackDTO.toString());
             }
-            dataResult = xinjiangCAService.dealSignCallbackPicOfPDF(signCallbackDTO);
             // 文件存放路径
             String basePath = System.getProperty("user.dir") + "/signPDF";
             String wqhth = signCallbackDTO.getWqhth();
@@ -59,6 +57,7 @@ public class XinjiangCAController {
                 dest.getParentFile().mkdirs();
             }
             ConvertUtil.base64StringToFile(signCallbackDTO.getInputPDF(),filePath);
+            xinjiangCAService.dealCallbackPersonSign(signCallbackDTO);
         } catch ( Exception e ) {
             dataResult.setStatus(200001);
             dataResult.setMsg("请求失败!");

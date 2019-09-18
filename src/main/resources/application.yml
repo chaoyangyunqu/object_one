@@ -47,5 +47,5 @@ xinjiangca:
   person: https://xjcasite:1449/services/PDFSign/PushPDFData/
 
 #日志配置
-logging.config: classpath:logback.xml
-
+logging:
+  config: classpath:logback.xml

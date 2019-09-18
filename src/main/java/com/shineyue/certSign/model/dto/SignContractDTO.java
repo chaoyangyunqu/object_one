@@ -1,12 +1,14 @@
 package com.shineyue.certSign.model.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import lombok.ToString;
 
 /**
  * @Description: TODO 网签合同数据传输对象
  * @author: luofuwei
  * @date: wrote on 2019/9/7
  */
+@ToString
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class SignContractDTO {
     /** 网签合同号 */

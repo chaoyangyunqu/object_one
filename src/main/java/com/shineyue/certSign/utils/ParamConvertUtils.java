@@ -2,10 +2,17 @@ package com.shineyue.certSign.utils;
 
 import com.shineyue.certSign.model.DataResult;
 import com.shineyue.certSign.model.dto.RaUserDTO;
+import com.shineyue.certSign.model.dto.SignContractDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.List;
+
+import static com.shineyue.certSign.service.impl.XinjiangCAServiceImpl.PERSONSIGN;
+import static com.shineyue.certSign.service.impl.XinjiangCAServiceImpl.PERSONSIGNCURRENT;
 
 /**
  * @Description: TODO
@@ -75,5 +82,47 @@ public class ParamConvertUtils<T> {
 
             return dataResult;
         }
+    }
+
+    public static DataResult dealPersonSign(SignContractDTO signContractDTO){
+        DataResult dataResult = new DataResult();
+        List<SignContractDTO> list = new ArrayList<SignContractDTO>();
+        try {
+            // 处理个人签章多人签署
+            String[] names = signContractDTO.getPersonName().split("\\|");
+            String[] phones = signContractDTO.getPersonPhone().split("\\|");
+            String[] idCards = signContractDTO.getPersonIdCard().split("\\|");
+            String[] personPicPoints = signContractDTO.getPersonPicPoints().split("\\|");
+            // 存储多个信息、位置
+            for (int i = 0; i < personPicPoints.length; i++) {
+                SignContractDTO signContractDTO1 = new SignContractDTO();
+                BeanUtils.copyProperties(signContractDTO, signContractDTO1, "personName", "personPhone", "personIdCard", "personPicPoints");
+                signContractDTO1.setPersonPicPoints(personPicPoints[i]);
+                if (i >= names.length) {
+                    signContractDTO1.setPersonName("");
+                } else {
+                    signContractDTO1.setPersonName(names[i]);
+                }
+                if (i >= phones.length) {
+                    signContractDTO1.setPersonPhone("");
+                } else {
+                    signContractDTO1.setPersonPhone(phones[i]);
+                }
+                if (i >= idCards.length) {
+                    signContractDTO1.setPersonIdCard("");
+                } else {
+                    signContractDTO1.setPersonIdCard(idCards[i]);
+                }
+                list.add(signContractDTO1);
+            }
+            PERSONSIGN.put(signContractDTO.getWqhth(), list);
+            PERSONSIGNCURRENT.put(signContractDTO.getWqhth(), 0);
+        } catch ( Exception e ) {
+            dataResult.setStatus(400001);
+            dataResult.setMsg("事件处理个人签署出错");
+            dataResult.setError(e.getMessage());
+        }
+
+        return dataResult;
     }
 }
