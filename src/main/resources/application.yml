@@ -12,18 +12,8 @@ server:
   connection-timeout: 5000
 spring:
   mvc:
-#    # 支持jsp
-#    view:
-#      prefix: /
-#      suffix: .jsp
     #扫描static目录下的所有文件，如js、img等
     static-path-pattern: /static/**
-  # postgresql config
-  datasource:
-    url: jdbc:postgresql://192.168.5.112:5432/xinjiangca
-    username: xinjiangca
-    password: xinjiangca
-    driver-class-name: org.postgresql.Driver
   #热部署生效
   devtools:
     restart:
@@ -37,12 +27,15 @@ spring:
     multipart:
       max-file-size: 60MB
       max-request-size: 300MB
+  # 指定执行环境
+  profiles:
+#    active: #spring.profiles.active#
+    active: internalTest
 # mybatis config #
 mybatis:
   config-locations: classpath:mybatis/mybatis-config.xml
   mapper-locations: classpath:mybatis/mapper/*.xml
   type-aliases-package: com.shenyue.certSign.model
-
 
 #新疆CA接口地址
 #https://xjcasite:1449/services/PDFSign/ReEntData/
@@ -52,14 +45,7 @@ xinjiangca:
   ent: https://xjcasite:1449/services/PDFSign/EntSignPDF/
   entMirle: https://xjcasite:1449/services/PDFSign/SignPagingSeal/
   person: https://xjcasite:1449/services/PDFSign/PushPDFData/
-#个人签署回调地址(本系统)
-  signCallbackURL: http://222.222.216.74:10246:8085/certSign/CA/ca/dealSignCallbackPicOfPDF.serivce
-
-#新疆房产网签合同推送接口
-xinjiangfc:
-  fcSignCallbackURL: http://192.168.5.198:8083/PUBLIC/ftp/dealSignCallbackPicOfPDF.serivce
 
 #日志配置
 logging.config: classpath:logback.xml
-
 
