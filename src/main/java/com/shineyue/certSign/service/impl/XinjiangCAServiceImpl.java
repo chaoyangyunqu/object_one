@@ -184,7 +184,7 @@ public class XinjiangCAServiceImpl{
                         int current = PERSONSIGNCURRENT.get(wqhth1) + 1 ;
                         logger.info("current:{}",current);
                         logger.info("SumCurrent:{}",PERSONSIGN.get(wqhth1).size());
-                        if (current < PERSONSIGN.get(wqhth1).size()) {
+                        if (current <= PERSONSIGN.get(wqhth1).size()) {
                             PERSONSIGNCURRENT.put(wqhth1,current);
                         }else {
                             logger.info("默认发送时,下标越界");
@@ -309,7 +309,7 @@ public class XinjiangCAServiceImpl{
                         int current = PERSONSIGNCURRENT.get(wqhth1) + 1 ;
                         logger.info("current:{}",current);
                         logger.info("SumCurrent:{}",PERSONSIGN.get(wqhth1).size());
-                        if (current < PERSONSIGN.get(wqhth1).size()) {
+                        if (current <= PERSONSIGN.get(wqhth1).size()) {
                             PERSONSIGNCURRENT.put(wqhth1,current);
                         }else {
                             logger.info("默认发送时,下标越界");
@@ -334,7 +334,7 @@ public class XinjiangCAServiceImpl{
         try {
 
             SignContractDTO signContractDTO1 = PERSONSIGN.get(signContractDTO.getWqhth()) .get(0);
-            logger.info("sss:{}",signContractDTO1);
+//            logger.info("sss:{}",signContractDTO1);
             // 证书序列号
             String certSNHex = signContractDTO.getSerial();
             // 16进制转换十进制
