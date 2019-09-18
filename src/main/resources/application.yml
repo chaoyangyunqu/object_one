@@ -53,7 +53,7 @@ xinjiangca:
   entMirle: https://xjcasite:1449/services/PDFSign/SignPagingSeal/
   person: https://xjcasite:1449/services/PDFSign/PushPDFData/
 #个人签署回调地址(本系统)
-  signCallbackURL: http://111.85.14.153:8085/certSign/CA/ca/dealSignCallbackPicOfPDF.serivce
+  signCallbackURL: http://222.222.216.74:10246:8085/certSign/CA/ca/dealSignCallbackPicOfPDF.serivce
 
 #新疆房产网签合同推送接口
 xinjiangfc:
