@@ -6,8 +6,12 @@ spring:
     username: xinjiangcacs
     password: xinjiangcacs
     driver-class-name: org.postgresql.Driver
-
+#新疆CA测试环境接口地址
 xinjiangca:
+  auth: http://117.190.233.96:19091/services/PDFSign/ReEntData/
+  ent: http://117.190.233.96:19091/services/PDFSign/EntSignPDF/
+  entMirle: http://117.190.233.96:19091/services/PDFSign/SignPagingSeal/
+  person: http://117.190.233.96:19091/services/PDFSign/PushPDFData/
   #个人签署回调地址(本系统)
   signCallbackURL: http://49.4.124.197:8085/certSign/CA/ca/dealSignCallbackPicOfPDF.serivce
 

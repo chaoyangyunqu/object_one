@@ -7,10 +7,15 @@ spring:
     password: 123456
     driver-class-name: org.postgresql.Driver
 
+#新疆CA测试环境接口地址
 xinjiangca:
+  auth: http://117.190.233.96:19091/services/PDFSign/ReEntData/
+  ent: http://117.190.233.96:19091/services/PDFSign/EntSignPDF/
+  entMirle: http://117.190.233.96:19091/services/PDFSign/SignPagingSeal/
+  person: http://117.190.233.96:19091/services/PDFSign/PushPDFData/
   #个人签署回调地址(本系统)此处为端口映射
   signCallbackURL: http://111.85.14.153:8085/certSign/CA/ca/dealSignCallbackPicOfPDF.serivce
 
-#新疆房产网签合同推送接口
+#新疆房产网签合同推送测试接口
 xinjiangfc:
   fcSignCallbackURL: http://192.168.10.33:8088/PUBLIC/ftp/dealSignCallbackPicOfPDF.serivce
