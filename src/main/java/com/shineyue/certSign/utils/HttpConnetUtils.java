@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.shineyue.certSign.model.DataResult;
 import com.shineyue.certSign.model.dto.SignContractDTO;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,29 +19,32 @@ import java.nio.charset.StandardCharsets;
  * @author: luofuwei
  * @date: wrote on 2019/9/6
  */
+@Slf4j
 public class HttpConnetUtils {
-    private final static Logger LOGGER = LoggerFactory.getLogger(HttpConnetUtils.class);
     public static DataResult httpConnet(SignContractDTO signContractDTO,String url, String dataJsonStr){
         DataResult dataResult = new DataResult();
         String msg = "";
+        log.info("{}远程连接中，请稍后...",url);
         try {
             URL targetUrl = new URL(url);
 
             HttpURLConnection httpConnection = (HttpURLConnection) targetUrl
                     .openConnection();
+            log.info("{}远程已连接，开始进行操作...",url);
+            // 超时设置
             httpConnection.setConnectTimeout(60000);
             httpConnection.setReadTimeout(60000);
+            // 允许写操作
             httpConnection.setDoOutput(true);
             httpConnection.setRequestMethod("POST");
             httpConnection.setRequestProperty("Content-Type",
                     "application/json");
-
             OutputStreamWriter paramout = new OutputStreamWriter(
                     httpConnection.getOutputStream(), "UTF-8");
             paramout.write(dataJsonStr);
             paramout.flush();
             paramout.close();
-
+            log.info("{}远程结束中，开始进行返回数据处理...",url);
             if (httpConnection.getResponseCode() != 200) {
                 throw new RuntimeException("Failed : HTTP error code : "
                         + httpConnection.getResponseCode());
@@ -52,16 +56,16 @@ public class HttpConnetUtils {
             String resStrData = ConvertUtil.decodeStr(resStr.trim().replace(' ','+'));
             JSONObject resJson = JSON.parseObject(resStrData);
             if (resJson.getString("SUCCESS").equals("FALSE")) {
-                String FailedReson = resJson.getString("REASON");
-                LOGGER.info("{}电子签章操作失败，原因如下:",msg);
-                LOGGER.info(FailedReson);
+                String failedReson = resJson.getString("REASON");
+                log.info("{}电子签章操作失败，原因如下:",msg);
+                log.info(failedReson);
                 dataResult.setStatus(200003);
                 dataResult.setMsg("CA远程签章失败");
-                dataResult.setError("失败原因:该证书序列号"+FailedReson);
+                dataResult.setError("失败原因:该证书序列号"+failedReson);
             }
 
             if (resJson.getString("SUCCESS").equals("TRUE")) {
-                LOGGER.info("{}电子签章成功",msg);
+                log.info("{}电子签章成功",msg);
                 String res = resJson.getString("BASEDATA");
                 signContractDTO.setInputPDF(res);
                 dataResult.setStatus(100001);
@@ -71,7 +75,7 @@ public class HttpConnetUtils {
                 return dataResult;
             }
             httpConnection.disconnect();
-            LOGGER.info("操作结束");
+            log.info("已完毕连接");
             return dataResult;
         } catch (Exception e) {
             dataResult.setStatus(400001);
