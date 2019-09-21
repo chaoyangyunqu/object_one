@@ -44,7 +44,6 @@ public class HttpConnetUtils {
             paramout.write(dataJsonStr);
             paramout.flush();
             paramout.close();
-            log.info("{}远程结束中，开始进行返回数据处理...",url);
             if (httpConnection.getResponseCode() != 200) {
                 throw new RuntimeException("Failed : HTTP error code : "
                         + httpConnection.getResponseCode());
@@ -53,6 +52,7 @@ public class HttpConnetUtils {
             String resStr = "";
             msg = signContractDTO.getSubject();
             resStr = IOUtils.toString(httpConnection.getInputStream(), StandardCharsets.UTF_8);
+            log.info("{}远程结束中，开始进行返回数据处理...",url);
             String resStrData = ConvertUtil.decodeStr(resStr.trim().replace(' ','+'));
             JSONObject resJson = JSON.parseObject(resStrData);
             if (resJson.getString("SUCCESS").equals("FALSE")) {

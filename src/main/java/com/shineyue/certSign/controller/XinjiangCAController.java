@@ -93,8 +93,6 @@ public class XinjiangCAController {
             }
             logger.info("合同号:{}",wqhth);
             logger.info("证书序列号:{}",serial);
-            logger.info("个人页数:{}",signContractDTO.getPersonPageNums());
-            logger.info("个人坐标:{}",signContractDTO.getPersonPicPoints());
             dataResult = xinjiangCAService.getPicOfPDF(signContractDTO);
 
         } catch ( Exception e ) {
@@ -127,7 +125,13 @@ public class XinjiangCAController {
                 dataResult.setError("请求参数错误");
                 return  dataResult;
             }
-            dataResult = xinjiangCAService.getPicOfPDFTest(file,signContractDTO);
+            File f = ConvertUtil.multipartFileToFile(file);
+            String inputPDF = ConvertUtil.getPDFBinary(f);
+            signContractDTO.setInputPDF(inputPDF);
+            // 删除遗留文件
+            File del = new File(f.toURI());
+            del.delete();
+            dataResult = xinjiangCAService.getPicOfPDF(signContractDTO);
 
 
         } catch ( Exception e ) {

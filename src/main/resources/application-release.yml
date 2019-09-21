@@ -18,4 +18,4 @@ xinjiangca:
 
 #新疆房产网签合同生产环境推送地址
 xinjiangfc:
-  fcSignCallbackURL: http://10.105.99.10:8083/PUBLIC/ftp/dealSignCallbackPicOfPDF.serivce
+  fcSignCallbackURL: http://10.105.99.9:8083/PUBLIC/ftp/dealSignCallbackPicOfPDF.serivce

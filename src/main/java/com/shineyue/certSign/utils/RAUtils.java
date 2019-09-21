@@ -12,6 +12,7 @@ import com.shineyue.certSign.model.dto.RaUserDTO;
 import com.shineyue.certSign.model.po.CertMsgPO;
 import koal.ra.caclient.LraType;
 import koal.ra.caclient.ReqType;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,6 +24,7 @@ import java.net.URLDecoder;
  * @author: luofuwei
  * @date: wrote on 2019/9/8
  */
+@Slf4j
 public class RAUtils {
 
     private final Logger logger = LoggerFactory.getLogger(RAUtils.class);
@@ -38,79 +40,13 @@ public class RAUtils {
             RaApiClient client2 = null;
             String dealUserCertType = null;
 
-//            String kraPath = URLDecoder.decode(this.getClass().getClassLoader().getResource("kra.properties").getPath(),"utf-8");
-//            String kra2Path = URLDecoder.decode(this.getClass().getClassLoader().getResource("kra2.properties").getPath(),"utf-8");
+//            String kraPath = System.getProperty("user.dir") + "/src/main/resources/kra.properties";
+//            String kra2Path = System.getProperty("user.dir") + "/src/main/resources/kra2.properties";
             String kraPath = System.getProperty("user.dir") + "/config/kra.properties";
             String kra2Path = System.getProperty("user.dir") + "/config/kra2.properties";
             logger.info("kra路径:{}",kraPath);
             logger.info("kra2路径:{}",kra2Path);
 
-            int userCertTypeCode = raUserBO.getUserCertTypeCode();
-            String userCertType = raUserBO.getUserCertType();
-
-            /**
-             * 1: 个人证书
-             * 2: 企业证书
-             * */
-            if (1 == userCertTypeCode) {
-                client = new RaApiClient("", ModuleId.user, FsmId.user);
-                client2 = new RaApiClient(kra2Path, ModuleId.user, FsmId.user);
-                // 初始化
-                client.init();
-                client2.init();
-                dealUserCertType = userCertType;
-            }else if (2 == userCertTypeCode) {
-                client = new RaApiClient(kraPath, ModuleId.ent, FsmId.ent);
-                client2 = new RaApiClient(kra2Path, ModuleId.ent, FsmId.ent);
-                // 初始化
-                client.init();
-                client2.init();
-                // CertType.ENT_DUAL_CERT_RSA.getCertTypeId();
-                dealUserCertType = userCertType;
-            }else {
-                dataResult.setStatus(100002);
-                dataResult.setError("证书尚未支持");
-                return dataResult;
-            }
-
-            // RA注册申请
-            userId = (int) client.certApply(raUserBO.getUserCertType(), raUserBO.getRaUserDTO());
-            if (userId <=0 ) {
-                dataResult.setStatus(200001);
-                dataResult.setError("RA远程服务器异常!");
-                return dataResult;
-            }
-
-            logger.info("userId:{}",userId);
-            dataResult.setStatus(100001);
-            dataResult.setResults(userId);
-
-            return dataResult;
-
-        } catch ( RaApiException e) {
-            dataResult.setStatus(200004);
-            dataResult.setMsg("Ra注申请失败");
-            dataResult.setError(e.getMessage());
-            return dataResult;
-        }
-    }
-
-    public DataResult reviewSign (int userId, RaUserBO raUserBO) {
-
-        DataResult dataResult = new DataResult();
-
-        try {
-
-            RaApiClient client = null;
-            RaApiClient client2 = null;
-            String dealUserCertType = null;
-
-//            String kraPath = URLDecoder.decode(this.getClass().getClassLoader().getResource("kra.properties").getPath(),"utf-8");
-//            String kra2Path = URLDecoder.decode(this.getClass().getClassLoader().getResource("kra2.properties").getPath(),"utf-8");
-            String kraPath = System.getProperty("user.dir") + "/config/kra.properties";
-            String kra2Path = System.getProperty("user.dir") + "/config/kra2.properties";
-            logger.info("kra路径:{}",kraPath);
-            logger.info("kra2路径:{}",kra2Path);
             int userCertTypeCode = raUserBO.getUserCertTypeCode();
             String userCertType = raUserBO.getUserCertType();
 
@@ -133,6 +69,69 @@ public class RAUtils {
                 client2.init();
                 // CertType.ENT_DUAL_CERT_RSA.getCertTypeId();
                 dealUserCertType = userCertType;
+            }else {
+                dataResult.setStatus(100002);
+                dataResult.setError("证书尚未支持");
+                return dataResult;
+            }
+
+            log.info("用户类型:{}",userCertTypeCode);
+            log.info("证书类型类型:{}",dealUserCertType);
+            // RA注册申请
+            userId = (int) client.certApply(dealUserCertType, raUserBO.getRaUserDTO());
+            if (userId <=0 ) {
+                dataResult.setStatus(200001);
+                dataResult.setError("RA远程服务器异常!");
+                return dataResult;
+            }
+
+            logger.info("userId:{}",userId);
+            dataResult.setStatus(100001);
+            dataResult.setResults(userId);
+
+            return dataResult;
+
+        } catch ( RaApiException  e) {
+            dataResult.setStatus(200004);
+            dataResult.setMsg("Ra注申请失败");
+            dataResult.setError(e.getMessage());
+            return dataResult;
+        }
+    }
+
+    public DataResult reviewSign (int userId, RaUserBO raUserBO) {
+
+        DataResult dataResult = new DataResult();
+
+        try {
+
+            RaApiClient client = null;
+            RaApiClient client2 = null;
+
+//            String kraPath = System.getProperty("user.dir") + "/src/main/resources/kra.properties";
+//            String kra2Path = System.getProperty("user.dir") + "/src/main/resources/kra2.properties";
+            String kraPath = System.getProperty("user.dir") + "/config/kra.properties";
+            String kra2Path = System.getProperty("user.dir") + "/config/kra2.properties";
+            logger.info("kra路径:{}",kraPath);
+            logger.info("kra2路径:{}",kra2Path);
+            int userCertTypeCode = raUserBO.getUserCertTypeCode();
+
+            /**
+             * 1: 个人证书
+             * 2: 企业证书
+             * */
+            if (1 == userCertTypeCode) {
+                client = new RaApiClient(kraPath, ModuleId.user, FsmId.user);
+                client2 = new RaApiClient(kra2Path, ModuleId.user, FsmId.user);
+                // 初始化
+                client.init();
+                client2.init();
+            }else if (2 == userCertTypeCode) {
+                client = new RaApiClient(kraPath, ModuleId.ent, FsmId.ent);
+                client2 = new RaApiClient(kra2Path, ModuleId.ent, FsmId.ent);
+                // 初始化
+                client.init();
+                client2.init();
             }else {
                 dataResult.setStatus(100002);
                 dataResult.setError("证书尚未支持");
