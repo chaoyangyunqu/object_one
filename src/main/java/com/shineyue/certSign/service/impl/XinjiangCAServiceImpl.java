@@ -12,10 +12,8 @@ import com.shineyue.certSign.utils.HttpService;
 import com.shineyue.certSign.utils.ParamConvertUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -32,24 +30,22 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @PackageName: com.shineyue.certSign.service
- * @Description: TODO
+ * @Description: TODO 签章处理
  * @author: 罗绂威
  * @date: wrote on 2019/8/28
  */
 @Slf4j
 @Service
 public class XinjiangCAServiceImpl{
-    private final Logger logger = LoggerFactory.getLogger(getClass());
+
+    @Resource
+    ExecutorServiceImpl executorService;
 
     // 存放每一份合同对应多个买受人签章信息
     public static final Map<String, List<SignContractDTO>> PERSONSIGN = new ConcurrentHashMap<String,List<SignContractDTO>>();
 
     // 统计盖章次数
     public static final Map<String, Integer> PERSONSIGNCURRENT = new ConcurrentHashMap<String, Integer>();
-
-//    // 注入发布事件
-//    @Resource
-//    ApplicationEventPublisher eventPublisher;
 
     /** token */
     public static String token = "9e477b99-f958-4688-2fc6-ccf670861265";
@@ -74,21 +70,32 @@ public class XinjiangCAServiceImpl{
     @Value("${xinjiangca.signCallbackURL}")
     public String signCallbackURL;
 
-
-
-
     /** 新疆房产网签合同推送接口 */
     @Value("${xinjiangfc.fcSignCallbackURL}")
     private String fcSignCallbackURL;
 
+    @Async("asyncServiceExecutor")
+    public void test () {
+        /**
+         * 耗时试验
+         */
+        log.info("开始耗时等待");
+        try {
+            Thread.sleep(5000);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        log.info("耗时等待结束，线程结束");
+    }
+
     public <T> T dealSignCallbackPicOfPDF(SignCallbackDTO signCallbackDTO) {
         DataResult dataResult = new DataResult();
-        logger.info("个人签署推送房产网签开始。。。");
+        log.info("个人签署推送房产网签开始。。。");
         try{
             dataResult.setStatus(100000);
             dataResult.setMsg("请求成功!");
             String dataJson = JSON.toJSONString(signCallbackDTO);
-            logger.info("房屋交易网签推送地址：{}",fcSignCallbackURL);
+            log.info("房屋交易网签推送地址：{}",fcSignCallbackURL);
             HttpService.doPost(fcSignCallbackURL,dataJson);
         } catch (Exception e) {
             dataResult.setStatus(200001);
@@ -100,49 +107,66 @@ public class XinjiangCAServiceImpl{
 
     public <T> T getPicOfPDF(SignContractDTO signContractDTO) {
         DataResult dataResult = new DataResult();
-        logger.info("开始操作,请等待...");
+        log.info("签章业务开始,请等待...");
         try {
             String base64String = signContractDTO.getInputPDF();
             // 证书序列号16进制转换十进制
             String certSNDec = new BigInteger(signContractDTO.getSerial(), 16).toString(10);
+            // 法人证书序列号16进制转换十进制
+            String corCertSNDec = "";
             // 盖章信息
             String dataJsonStr = "";
+            // 企业法人盖章信息
+            String corPrama = "";
             // 骑缝章标志
             boolean isMirle = false;
+            // 法人章标志
+            boolean isCor = false;
             // 用户类型
             int type = 0;
             type = signContractDTO.getType();
-            logger.info("userType:{}",type);
+            log.info("userType:{}",type);
             if (2 == type) {
-                // 页码
-                String pageNums = signContractDTO.getPageNums();
-                // 企业章大小
-                String picSizes = "(100,100)";
-                // 盖章位置
-                String picPoints = signContractDTO.getPicPoints();
                 // pdf信息
-                String PDFJsonStr = "{'inputPDF':'" + base64String.trim();
-                // 参数信息
+                String jsonStrPDF = "{'inputPDF':'" + base64String.trim();
+                // 企业页码
+                String pageNums = signContractDTO.getPageNums();
+                // 章大小
+                String picSizes = "";
+                // 企业盖章位置
+                String picPoints = signContractDTO.getPicPoints();
+                // 企业参数信息
                 String pramaJsonStr = "','CertSN':'"+certSNDec+"','PageNums':'" + pageNums + "','picSizes':'"+picSizes+"','picPoints':'"+picPoints+"','token':'"+token+"'}";
-                dataJsonStr = PDFJsonStr + pramaJsonStr ;
-                logger.info("企业盖章参数信息:{}",pramaJsonStr);
-                logger.info("企业请求URL:{}",entBaseUri);
+                dataJsonStr = jsonStrPDF + pramaJsonStr ;
+                log.info("企业盖章参数信息:{}",pramaJsonStr);
+                log.info("企业请求URL:{}",entBaseUri);
                 isMirle = true;
-
+                if (!"".equals(signContractDTO.getCorSerial())) {
+                    corCertSNDec = new BigInteger(signContractDTO.getCorSerial(), 16).toString(10);
+                    // 法人页码
+                    String corPageNums = signContractDTO.getCorPageNums();
+                    // 法人盖章位置
+                    String corPicPoints = signContractDTO.getCorPicPoints();
+                    // 法人签章参数信息
+                    corPrama = "','CertSN':'"+corCertSNDec+"','PageNums':'" + corPageNums + "','picSizes':'"+picSizes+"','picPoints':'"+corPicPoints+"','token':'"+token+"'}";
+                    log.info("法人盖章参数信息:{}",corPrama);
+                    log.info("法人请求URL:{}",entBaseUri);
+                    isCor = true;
+                }
             } else if (3 == type) {
                 // 页码
                 String pageNums = signContractDTO.getPageNums();
                 // 企业章大小
-                String picSizes = "(100,100)";
+                String picSizes = "";
                 // 盖章位置
                 String picPoints = signContractDTO.getPicPoints();
                 // pdf信息
-                String PDFJsonStr = "{'inputPDF':'" + base64String.trim();
+                String jsonStrPDF = "{'inputPDF':'" + base64String.trim();
                 // 参数信息
                 String pramaJsonStr = "','CertSN':'"+certSNDec+"','PageNums':'" + pageNums + "','picSizes':'"+picSizes+"','picPoints':'"+picPoints+"','token':'"+token+"'}";
-                dataJsonStr = PDFJsonStr + pramaJsonStr ;
-                logger.info("机构盖章参数信息:{}",pramaJsonStr);
-                logger.info("机构URL:{}",entBaseUri);
+                dataJsonStr = jsonStrPDF + pramaJsonStr ;
+                log.info("机构盖章参数信息:{}",pramaJsonStr);
+                log.info("机构URL:{}",entBaseUri);
             } else {
                 dataResult.setMsg("其他机构签章功能暂未开通");
                 return (T) dataResult;
@@ -161,40 +185,68 @@ public class XinjiangCAServiceImpl{
                 // 不存在则新建文件夹
                 dest.getParentFile().mkdirs();
             }
+
+            log.info("签章第一阶段开始");
             dataResult = HttpConnetUtils.httpConnet(signContractDTO,entBaseUri,dataJsonStr);
-            // 存入本地
+
             if (100001 == dataResult.getStatus()) {
-                SignContractDTO signContractDTO1 = (SignContractDTO) dataResult.getResults();
+                SignContractDTO entSCDTO = (SignContractDTO) dataResult.getResults();
+                log.info("企业/机构第一阶段签章完成");
                 if (isMirle) {
+
                     // 骑缝章  默认中间位置
-                    String dataJsonMirleStr = "{'inputPDF':'"
-                            + signContractDTO1.getInputPDF()
-                            + "','CertSN':'"+certSNDec+"','picSize':'100','picPos':'','token':'"+token+"'}";
-                    DataResult dataResult1 = HttpConnetUtils.httpConnet(signContractDTO1,entMirleBaseUri,dataJsonMirleStr);
-                    SignContractDTO signContractDTO2 = (SignContractDTO) dataResult1.getResults();
-                    ConvertUtil.base64StringToFile(signContractDTO2.getInputPDF(),filePath);
-                    // 个人签署
-                    logger.info("企业骑缝章已完成");
-                    ParamConvertUtils.dealPersonSign(signContractDTO2);
-                    // 默认加载一次
-                    String wqhth1 = signContractDTO2.getWqhth();
-                    SignContractDTO sp = PERSONSIGN.get(wqhth1).get(0);
-                    dataResult = dealPersonSign(sp);
-                    if (100001 == dataResult.getStatus()) {
+                    String dataJsonMirleStr = "{'inputPDF':'" + entSCDTO.getInputPDF()
+                            + "','CertSN':'"+certSNDec+"','picSize':'','picPos':'','token':'"+token+"'}";
+                    DataResult mirleDataResult = HttpConnetUtils.httpConnet(entSCDTO,entMirleBaseUri,dataJsonMirleStr);
+                    log.info("企业骑缝章已完成");
+                    SignContractDTO mirleSCDTO = (SignContractDTO) mirleDataResult.getResults();
+
+                    if (isCor) {
+                        log.info("企业法人：{}",mirleSCDTO.getCorSubject());
+                        log.info("企业法人key序列号：{}",mirleSCDTO.getCorSerial());
+                        // 企业法人章签章信息
+                        String corDataJsonStr = "{'inputPDF':'" + mirleSCDTO.getInputPDF() + corPrama;
+                        DataResult corDataResult = HttpConnetUtils.httpConnet(mirleSCDTO,entBaseUri,corDataJsonStr);
+                        log.info("企业法人章签章已完成");
+
+                        SignContractDTO corSCDTO = (SignContractDTO) corDataResult.getResults();
+                        ConvertUtil.base64StringToFile(corSCDTO.getInputPDF(),filePath);
+                        log.info("当前已文件存入本地");
+
+                        ParamConvertUtils.dealPersonSign(corSCDTO);
+                        String wqhth1 = corSCDTO.getWqhth();
                         int current = PERSONSIGNCURRENT.get(wqhth1) + 1 ;
-                        logger.info("current:{}",current);
-                        logger.info("SumCurrent:{}",PERSONSIGN.get(wqhth1).size());
+                        log.info("current:{}",current);
+                        log.info("SumCurrent:{}",PERSONSIGN.get(wqhth1).size());
                         if (current <= PERSONSIGN.get(wqhth1).size()) {
                             PERSONSIGNCURRENT.put(wqhth1,current);
                         }else {
-                            logger.info("默认发送时,下标越界");
+                            log.info("默认发送时,下标越界");
                         }
+
+                        SignContractDTO sp = PERSONSIGN.get(wqhth1).get(0);
+                        executorService.dealPersonSignExecutor(sp,person,signCallbackURL);
+                        corDataResult.setMsg("企业公章、法人签章已完成，请进行个人签署");
+                        return (T) corDataResult;
                     }
-                    dataResult1.setMsg("企业普通章与骑缝章已完成，请进行个人签署");
-//                    dataResult1 = dealPersonSign(signContractDTO2);
-                    return (T) dataResult1;
+
+                    ParamConvertUtils.dealPersonSign(mirleSCDTO);
+                    String wqhth1 = mirleSCDTO.getWqhth();
+                    int current = PERSONSIGNCURRENT.get(wqhth1) + 1 ;
+                    log.info("current:{}",current);
+                    log.info("SumCurrent:{}",PERSONSIGN.get(wqhth1).size());
+                    if (current <= PERSONSIGN.get(wqhth1).size()) {
+                        PERSONSIGNCURRENT.put(wqhth1,current);
+                    }else {
+                        log.info("默认发送时,下标越界");
+                    }
+                    SignContractDTO sp = PERSONSIGN.get(wqhth1).get(0);
+                    executorService.dealPersonSignExecutor(sp,person,signCallbackURL);
+                    mirleDataResult.setMsg("企业公章已完成，请进行个人签署");
+                    ConvertUtil.base64StringToFile(mirleSCDTO.getInputPDF(),filePath);
+                    return (T) mirleDataResult;
                 }
-                ConvertUtil.base64StringToFile(signContractDTO1.getInputPDF(),filePath);
+                ConvertUtil.base64StringToFile(entSCDTO.getInputPDF(),filePath);
             }
             return (T) dataResult;
         } catch (Exception e) {
@@ -205,136 +257,11 @@ public class XinjiangCAServiceImpl{
         }
     }
 
-    /**
-     * @Author luofuwei
-     * @Description //TODO 电子签章
-     * @Date 2019/9/4
-     * @Param [file] 网签合同PDF文件
-     * @return T
-     **/
-//    @Override
-    public <T> T getPicOfPDFTest(MultipartFile file,SignContractDTO signContractDTO) {
-        DataResult dataResult = new DataResult();
-        logger.info("开始操作,请等待...");
-        try {
-
-            File f = ConvertUtil.multipartFileToFile(file);
-            String inputPDF = ConvertUtil.getPDFBinary(f);
-            signContractDTO.setInputPDF(inputPDF);
-            // 删除遗留文件
-            File del = new File(f.toURI());
-            del.delete();
-//            -----分割线-------
-            // PDF文件转码
-            String base64String = signContractDTO.getInputPDF();
-            // 证书序列号16进制转换十进制
-            String certSNDec = new BigInteger(signContractDTO.getSerial(), 16).toString(10);
-            // 盖章信息
-            String dataJsonStr = "";
-            // 骑缝章标志
-            boolean isMirle = false;
-            // 用户类型
-            int type = 0;
-            type = signContractDTO.getType();
-            logger.info("userType:{}",type);
-            if (2 == type) {
-                // 页码
-                String pageNums = signContractDTO.getPageNums();
-                // 企业章大小
-                String picSizes = "(100,100)";
-                // 盖章位置
-                String picPoints = signContractDTO.getPicPoints();
-                // pdf信息
-                String PDFJsonStr = "{'inputPDF':'" + base64String.trim();
-                // 参数信息
-                String pramaJsonStr = "','CertSN':'"+certSNDec+"','PageNums':'" + pageNums + "','picSizes':'"+picSizes+"','picPoints':'"+picPoints+"','token':'"+token+"'}";
-                dataJsonStr = PDFJsonStr + pramaJsonStr ;
-                logger.info("企业盖章参数信息:{}",pramaJsonStr);
-                logger.info("企业请求URL:{}",entBaseUri);
-                isMirle = true;
-            } else if (3 == type) {
-                // 页码
-                String pageNums = signContractDTO.getPageNums();
-                // 企业章大小
-                String picSizes = "(100,100)";
-                // 盖章位置
-                String picPoints = signContractDTO.getPicPoints();
-                // pdf信息
-                String PDFJsonStr = "{'inputPDF':'" + base64String.trim();
-                // 参数信息
-                String pramaJsonStr = "','CertSN':'"+certSNDec+"','PageNums':'" + pageNums + "','picSizes':'"+picSizes+"','picPoints':'"+picPoints+"','token':'"+token+"'}";
-                dataJsonStr = PDFJsonStr + pramaJsonStr ;
-                logger.info("机构盖章参数信息:{}",pramaJsonStr);
-                logger.info("机构URL:{}",entBaseUri);
-            } else {
-                dataResult.setMsg("其他机构签章功能暂未开通");
-                return (T) dataResult;
-            }
-
-            // 文件存放路径
-            String basePath = System.getProperty("user.dir") + "/signPDF";
-            // 网签合同号
-            String wqhth = signContractDTO.getWqhth();
-            // 设置文件名
-            String fileName = "/商品房网签合同(企业已签章)" + wqhth + ".pdf";
-            String filePath = basePath + fileName;
-            File dest = new File(filePath);
-            // 检测是否存在目录
-            if (!dest.getParentFile().exists()) {
-                // 不存在则新建文件夹
-                dest.getParentFile().mkdirs();
-            }
-            dataResult = HttpConnetUtils.httpConnet(signContractDTO,entBaseUri,dataJsonStr);
-            // 存入本地
-            if (100001 == dataResult.getStatus()) {
-                SignContractDTO signContractDTO1 = (SignContractDTO) dataResult.getResults();
-                if (isMirle) {
-                    // 骑缝章  默认中间位置
-                    String dataJsonMirleStr = "{'inputPDF':'"
-                            + signContractDTO1.getInputPDF()
-                            + "','CertSN':'"+certSNDec+"','picSize':'100','picPos':'','token':'"+token+"'}";
-                    DataResult dataResult1 = HttpConnetUtils.httpConnet(signContractDTO1,entMirleBaseUri,dataJsonMirleStr);
-                    SignContractDTO signContractDTO2 = (SignContractDTO) dataResult1.getResults();
-                    ConvertUtil.base64StringToFile(signContractDTO2.getInputPDF(),filePath);
-                    logger.info("企业骑缝章已完成");
-                    // 发布个人签署事件
-//                    eventPublisher.publishEvent(new DealPersonSignEvent(this,signContractDTO2).dealPersonSign());
-//                    dataResult1 = dealPersonSign(signContractDTO2);
-                    ParamConvertUtils.dealPersonSign(signContractDTO2);
-                    // 默认加载一次
-                    String wqhth1 = signContractDTO2.getWqhth();
-                    SignContractDTO sp = PERSONSIGN.get(wqhth1).get(0);
-                    dataResult = dealPersonSign(sp);
-                    if (100001 == dataResult.getStatus()) {
-                        int current = PERSONSIGNCURRENT.get(wqhth1) + 1 ;
-                        logger.info("current:{}",current);
-                        logger.info("SumCurrent:{}",PERSONSIGN.get(wqhth1).size());
-                        if (current <= PERSONSIGN.get(wqhth1).size()) {
-                            PERSONSIGNCURRENT.put(wqhth1,current);
-                        }else {
-                            logger.info("默认发送时,下标越界");
-                        }
-                    }
-                    dataResult1.setMsg("企业普通章与骑缝章已完成，请进行个人签署");
-                    return (T) dataResult1;
-                }
-                ConvertUtil.base64StringToFile(signContractDTO1.getInputPDF(),filePath);
-            }
-            return (T) dataResult;
-        } catch ( Exception e ){
-            dataResult.setMsg("电子签章失败");
-            dataResult.setError("业务层错误信息："+e.getMessage());
-            return (T) dataResult;
-        }
-    }
-
     public <T> T dealPersonSign(SignContractDTO signContractDTO) {
         DataResult dataResult = new DataResult();
-        logger.info("个人签署开始操作,请等待...");
+        log.info("个人签署开始操作,请等待...");
         try {
 
-            SignContractDTO signContractDTO1 = PERSONSIGN.get(signContractDTO.getWqhth()) .get(0);
-//            logger.info("sss:{}",signContractDTO1);
             // 证书序列号
             String certSNHex = signContractDTO.getSerial();
             // 16进制转换十进制
@@ -358,22 +285,33 @@ public class XinjiangCAServiceImpl{
             // 盖章信息
             String dataJsonStr = PDFJsonStr + pramaJsonStr ;
             if ("".equals(tempPDF)) {
-                logger.info("个人盖章PDF文件为空");
+                log.info("不存在个人盖章PDF文件");
             }else {
-                logger.info("个人盖章PDF文件不为空");
+                log.info("存在个人盖章PDF文件");
             }
-            logger.info("个人盖章参数信息:{}",pramaJsonStr);
-            logger.info("个人请求URL:{}",person);
-            logger.info("个人签署回调URL:{}",signCallbackURL);
+            log.info("个人签署参数信息:{}",pramaJsonStr);
+            log.info("个人签署请求URL:{}",person);
+            log.info("个人签署回调URL:{}",signCallbackURL);
 
             dataResult = HttpConnetUtils.httpConnet(signContractDTO,person,dataJsonStr);
+            SignContractDTO rollBackscDTO = (SignContractDTO) dataResult.getResults();
+            String wqhth1 = rollBackscDTO.getWqhth();
             if (100001 != dataResult.getStatus()) {
                 return (T) dataResult;
+            }
+            log.info("个人签章处理结束");
+            int current = PERSONSIGNCURRENT.get(wqhth1) + 1 ;
+            log.info("current:{}",current);
+            log.info("SumCurrent:{}",PERSONSIGN.get(wqhth1).size());
+            if (current <= PERSONSIGN.get(wqhth1).size()) {
+                PERSONSIGNCURRENT.put(wqhth1,current);
+            }else {
+                log.info("默认发送时,下标越界");
             }
             signContractDTO.setInputPDF(tempPDF);
             dataResult.setResults(signContractDTO);
             dataResult.setMsg("个人签署推送成功");
-            logger.info("个人签署推送成功!");
+            log.info("个人签署推送成功!");
             return (T) dataResult;
         } catch ( Exception e ){
             dataResult.setMsg("个人签署推送失败");
@@ -384,12 +322,12 @@ public class XinjiangCAServiceImpl{
 
     public DataResult dealCallbackPersonSign (SignCallbackDTO signCallbackDTO) {
         DataResult dataResult = new DataResult();
-        SignContractDTO signContractDTO = new SignContractDTO();
+        SignContractDTO signContractDTO;
         String wqhth = "";
         String inputPDF = "";
         try{
             wqhth = signCallbackDTO.getWqhth();
-            logger.info("回调合同号:{}",wqhth);
+            log.info("回调合同号:{}",wqhth);
             inputPDF = signCallbackDTO.getInputPDF();
             if (PERSONSIGN.containsKey(wqhth)) {
                 if (PERSONSIGNCURRENT.containsKey(wqhth)) {
@@ -405,8 +343,10 @@ public class XinjiangCAServiceImpl{
                         if (100001 != dataResult.getStatus()) {
                             log.info("回调个人签署异常:{}",dataResult.getError());
                         }
-                        PERSONSIGNCURRENT.put(wqhth,current+1);
+                        PERSONSIGNCURRENT.put(wqhth,current + 1);
                     }else {
+                        PERSONSIGN.remove(wqhth);
+                        PERSONSIGNCURRENT.remove(wqhth);
                         dataResult = dealSignCallbackPicOfPDF(signCallbackDTO);
                     }
                 }
@@ -423,12 +363,13 @@ public class XinjiangCAServiceImpl{
     // 获取certCN  并与企业唯一号绑定
 //    @Override
     public DataResult getCertSN(MultipartFile file , PicBindCertCNVO picBindCertCNVO){
-        logger.info("**************************调用ReEnterpriseWebService接口开始*******************");
+        log.info("**************************调用ReEnterpriseWebService接口开始*******************");
         DataResult dataResult = new DataResult();
         try {
             String userName = picBindCertCNVO.getSubject();
             // 企业公章数据
             String entImgData = ConvertUtil.GetImageBaes64Str(file);
+            // 图片类型
             String entSealType = "png";
             // 该值通过硬件设备的签名证书中获取 40328751378DE9B463BFE72B
             String certSNHex = picBindCertCNVO.getSerial();
@@ -436,18 +377,23 @@ public class XinjiangCAServiceImpl{
             String certSNDec = new BigInteger(certSNHex, 16).toString(10);
             // 企业联系人手机号
             String entPhone = picBindCertCNVO.getEntPhone();
+
             String str = "{'CertSN':'" + certSNDec
                     + "','EntUserName':'"+userName+"','EntPhone':'"+entPhone+"','EntSealData':'" + entImgData
                     + "','EntSealType':'" + entSealType + "','token':'"+token+"'}";
 
-            logger.info("authBaseUri:{}",authBaseUri);
-            logger.info("注册信息:{}",str);
+            String strShow = "{'CertSN':'" + certSNDec
+                    + "','EntUserName':'"+userName+"','EntPhone':'"+entPhone
+                    + "','EntSealType':'" + entSealType + "','token':'"+token+"'}";
 
+            log.info("企业注册电子url:{}",authBaseUri);
+            log.info("注册信息:{}",strShow);
+            log.info("注册中，请稍后。。。");
             URL targetUrl = new URL(authBaseUri);
             HttpURLConnection httpConnection = (HttpURLConnection) targetUrl
                     .openConnection();
-            httpConnection.setConnectTimeout(30000);
-            httpConnection.setReadTimeout(30000);
+            httpConnection.setConnectTimeout(60000);
+            httpConnection.setReadTimeout(60000);
             httpConnection.setDoOutput(true);
             httpConnection.setRequestMethod("POST");
             httpConnection.setRequestProperty("Content-Type",
@@ -467,25 +413,25 @@ public class XinjiangCAServiceImpl{
             String resStr = "";
             resStr = IOUtils.toString(httpConnection.getInputStream(),
                     StandardCharsets.UTF_8);
-            // logger.info(resStr);
+            // log.info(resStr);
             String resJson = ConvertUtil.decodeStr(resStr.trim().replace(' ',
                     '+'));
-            logger.info(resJson);
+            log.info(resJson);
             JSONObject resJsonObj = JSON.parseObject(resJson);
             if (resJsonObj.getString("SUCCESS").equals("FALSE")) {
                 String FailedReson = resJsonObj.getString("REASON");
-                logger.info("企业注册失败，原因如下:");
-                logger.info(FailedReson);
+                log.info("企业注册失败，原因如下:");
+                log.info(FailedReson);
                 dataResult.setSuccess(false);
                 dataResult.setMsg(FailedReson);
                 return dataResult;
             }
 
             if (resJsonObj.getString("SUCCESS").equals("TRUE")) {
-                logger.info("企业注册成功");
+                log.info("企业注册成功");
             }
             httpConnection.disconnect();
-            logger.info("**************************调用ReEnterpriseWebService接口结束*******************");
+            log.info("**************************调用ReEnterpriseWebService接口结束*******************");
             dataResult.setSuccess(true);
             dataResult.setMsg("注册成功");
             return dataResult;

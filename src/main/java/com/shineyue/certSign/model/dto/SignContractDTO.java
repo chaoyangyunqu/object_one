@@ -1,6 +1,7 @@
 package com.shineyue.certSign.model.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import lombok.Data;
 import lombok.ToString;
 
 /**
@@ -8,7 +9,7 @@ import lombok.ToString;
  * @author: luofuwei
  * @date: wrote on 2019/9/7
  */
-@ToString
+@Data
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class SignContractDTO {
     /** 网签合同号 */
@@ -47,99 +48,16 @@ public class SignContractDTO {
     /** 个人签署坐标位置 */
     private String personPicPoints;
 
-    public String getWqhth() {
-        return wqhth;
-    }
+    /** 法人key的序列号 */
+    private String corSerial;
 
-    public void setWqhth(String wqhth) {
-        this.wqhth = wqhth;
-    }
+    /** 法人对象名称 */
+    private String corSubject;
 
-    public String getInputPDF() {
-        return inputPDF;
-    }
+    /** 法人签章页码 */
+    private String corPageNums;
 
-    public void setInputPDF(String inputPDF) {
-        this.inputPDF = inputPDF;
-    }
+    /** 法人签署坐标位置 */
+    private String corPicPoints;
 
-    public int getType() {
-        return type;
-    }
-
-    public void setType(int type) {
-        this.type = type;
-    }
-
-    public String getPageNums() {
-        return pageNums;
-    }
-
-    public void setPageNums(String pageNums) {
-        this.pageNums = pageNums;
-    }
-
-    public String getPicPoints() {
-        return picPoints;
-    }
-
-    public void setPicPoints(String picPoints) {
-        this.picPoints = picPoints;
-    }
-
-    public String getSerial() {
-        return serial;
-    }
-
-    public void setSerial(String serial) {
-        this.serial = serial;
-    }
-
-    public String getSubject() {
-        return subject;
-    }
-
-    public void setSubject(String subject) {
-        this.subject = subject;
-    }
-
-    public String getPersonPageNums() {
-        return personPageNums;
-    }
-
-    public void setPersonPageNums(String personPageNums) {
-        this.personPageNums = personPageNums;
-    }
-
-    public String getPersonPicPoints() {
-        return personPicPoints;
-    }
-
-    public void setPersonPicPoints(String personPicPoints) {
-        this.personPicPoints = personPicPoints;
-    }
-
-    public String getPersonName() {
-        return personName;
-    }
-
-    public void setPersonName(String personName) {
-        this.personName = personName;
-    }
-
-    public String getPersonPhone() {
-        return personPhone;
-    }
-
-    public void setPersonPhone(String personPhone) {
-        this.personPhone = personPhone;
-    }
-
-    public String getPersonIdCard() {
-        return personIdCard;
-    }
-
-    public void setPersonIdCard(String personIdCard) {
-        this.personIdCard = personIdCard;
-    }
 }

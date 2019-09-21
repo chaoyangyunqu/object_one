@@ -31,7 +31,7 @@ spring:
   profiles:
 #    active: #spring.profiles.active#
 # 1.internalTest：公司测试环境；2.huaweiCloudTest：华为云测试环境  3.release：华为云生产环境
-    active: internalTest
+    active: dev
 # mybatis config #
 mybatis:
   config-locations: classpath:mybatis/mybatis-config.xml
@@ -41,3 +41,16 @@ mybatis:
 #日志配置
 logging:
   config: classpath:logback.xml
+
+#程序线程池配置
+threadPoolTaskExecutor:
+  #核心线程数：线程池创建时候初始化的线程数
+  corePoolSize: 30
+  #最大线程数：线程池最大的线程数，缓冲队列满申请超过核心线程数的线程
+  maxPoolSize: 60
+  #缓冲队列：用来缓冲执行任务的队列
+  queueCapacity: 200
+  #允许线程的空闲时间：超过了核心线程出之外的线程在空闲时间到达之后会被销毁
+  keepAliveSeconds: 60
+  #线程池中的线程的名称前缀:定位处理任务所在的线程池
+  threadNamePrefix: taskExecutor-

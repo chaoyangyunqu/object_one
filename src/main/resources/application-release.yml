@@ -7,10 +7,15 @@ spring:
     password: xinjiangca
     driver-class-name: org.postgresql.Driver
 
+# CA生产环境接口地址
 xinjiangca:
-  #个人签署回调地址(本系统)
+  auth: https://xjcasite:1449/services/PDFSign/ReEntData/
+  ent: https://xjcasite:1449/services/PDFSign/EntSignPDF/
+  entMirle: https://xjcasite:1449/services/PDFSign/SignPagingSeal/
+  person: https://xjcasite:1449/services/PDFSign/PushPDFData/
+  #个人签署生产环境回调地址(本系统)
   signCallbackURL: http://49.4.124.214:8085/certSign/CA/ca/dealSignCallbackPicOfPDF.serivce
 
-#新疆房产网签合同推送接口
+#新疆房产网签合同生产环境推送地址
 xinjiangfc:
-  fcSignCallbackURL: http://10.105.99.10:8083/PUBLIC/ftp/dealSignCallbackPicOfPDF.serivce
+  fcSignCallbackURL: http://10.105.99.9:8083/PUBLIC/ftp/dealSignCallbackPicOfPDF.serivce
