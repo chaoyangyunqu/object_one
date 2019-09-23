@@ -195,9 +195,17 @@ public class XinjiangCAServiceImpl{
                 if (isMirle) {
 
                     // 骑缝章  默认中间位置
-                    String dataJsonMirleStr = "{'inputPDF':'" + entSCDTO.getInputPDF()
-                            + "','CertSN':'"+certSNDec+"','picSize':'','picPos':'','token':'"+token+"'}";
-                    DataResult mirleDataResult = HttpConnetUtils.httpConnet(entSCDTO,entMirleBaseUri,dataJsonMirleStr);
+                    String dataJsonMirleStr = "{'inputPDF':'" + entSCDTO.getInputPDF();
+                    String mirlsPrama = "','CertSN':'"+certSNDec+"','picSize':'','picPos':'','token':'"+token+"'}";
+                    String mirlsDataJsonStr = dataJsonMirleStr + mirlsPrama;
+                    if (null==entSCDTO.getInputPDF()||"".equals(entSCDTO.getInputPDF())) {
+                        log.info("第一阶段返回没有pdf");
+                    }else {
+                        log.info("第一阶段返回有pdf");
+                    }
+                    log.info("骑缝章参数:{}",mirlsPrama);
+                    log.info("开始进行骑缝章...");
+                    DataResult mirleDataResult = HttpConnetUtils.httpConnet(entSCDTO,entMirleBaseUri,mirlsDataJsonStr);
                     log.info("企业骑缝章已完成");
                     SignContractDTO mirleSCDTO = (SignContractDTO) mirleDataResult.getResults();
 

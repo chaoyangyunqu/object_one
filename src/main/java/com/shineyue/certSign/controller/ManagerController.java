@@ -32,7 +32,7 @@ public class ManagerController {
      **/
     @PostMapping(value = "Manager/queryManager.service")
     public DataResult queryManager(@RequestBody InManagerVO inManagerVO){
-        logger.info("dsds",inManagerVO);
+        logger.info("登陆请求",inManagerVO);
         return managerService.managerQuery(inManagerVO);
     }
 }
