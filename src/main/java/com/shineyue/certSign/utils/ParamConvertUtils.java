@@ -84,49 +84,8 @@ public class ParamConvertUtils<T> {
         }
     }
 
+
     public static DataResult dealPersonSign1(SignContractDTO signContractDTO){
-        DataResult dataResult = new DataResult();
-        List<SignContractDTO> list = new ArrayList<SignContractDTO>();
-        try {
-            // 处理个人签章多人签署
-            String[] names = signContractDTO.getPersonName().split("\\|");
-            String[] phones = signContractDTO.getPersonPhone().split("\\|");
-            String[] idCards = signContractDTO.getPersonIdCard().split("\\|");
-            String[] personPicPoints = signContractDTO.getPersonPicPoints().split("\\|");
-            // 存储多个信息、位置
-            for (int i = 0; i < personPicPoints.length; i++) {
-                SignContractDTO signContractDTO1 = new SignContractDTO();
-                BeanUtils.copyProperties(signContractDTO, signContractDTO1, "personName", "personPhone", "personIdCard", "personPicPoints");
-                signContractDTO1.setPersonPicPoints(personPicPoints[i]);
-                if (i >= names.length) {
-                    signContractDTO1.setPersonName("");
-                } else {
-                    signContractDTO1.setPersonName(names[i]);
-                }
-                if (i >= phones.length) {
-                    signContractDTO1.setPersonPhone("");
-                } else {
-                    signContractDTO1.setPersonPhone(phones[i]);
-                }
-                if (i >= idCards.length) {
-                    signContractDTO1.setPersonIdCard("");
-                } else {
-                    signContractDTO1.setPersonIdCard(idCards[i]);
-                }
-                list.add(signContractDTO1);
-            }
-            PERSONSIGN.put(signContractDTO.getWqhth(), list);
-            PERSONSIGNCURRENT.put(signContractDTO.getWqhth(), 0);
-        } catch ( Exception e ) {
-            dataResult.setStatus(400001);
-            dataResult.setMsg("事件处理个人签署出错");
-            dataResult.setError(e.getMessage());
-        }
-
-        return dataResult;
-    }
-
-    public static DataResult dealPersonSign(SignContractDTO signContractDTO){
         DataResult dataResult = new DataResult();
         List<SignContractDTO> list = new ArrayList<SignContractDTO>();
         try {
@@ -168,6 +127,96 @@ public class ParamConvertUtils<T> {
             }
             PERSONSIGN.put(signContractDTO.getWqhth(), list);
             PERSONSIGNCURRENT.put(signContractDTO.getWqhth(), 0);
+        } catch ( Exception e ) {
+            dataResult.setStatus(400001);
+            dataResult.setMsg("事件处理个人签署出错");
+            dataResult.setError(e.getMessage());
+        }
+
+        return dataResult;
+    }
+    public static DataResult dealPersonSign(SignContractDTO signContractDTO){
+        DataResult dataResult = new DataResult();
+        List<SignContractDTO> list = new ArrayList<SignContractDTO>();
+        try {
+            // 处理个人签章多人签署
+            String[] personPageNumsGroup = signContractDTO.getPersonPageNums().split("#");
+            String[] namesGroup = signContractDTO.getPersonName().split("#");
+            String[] phonesGroup = signContractDTO.getPersonPhone().split("#");
+            String[] idCardsGroup = signContractDTO.getPersonIdCard().split("#");
+            String[] personPicPointsGroup = signContractDTO.getPersonPicPoints().split("#");
+
+            int personCount = personPicPointsGroup.length;
+
+            if (personCount == 2) {
+                if (idCardsGroup[0].equals(idCardsGroup[1])) {
+                    String[] names = namesGroup[0].split("\\|");
+                    String[] phones = phonesGroup[0].split("\\|");
+                    String[] idCards = idCardsGroup[0].split("\\|");
+                    String personPageNums = signContractDTO.getPersonPageNums();
+
+                    for (int i = 0; i<idCards.length;i++) {
+                        String[] personPicPoint1 = personPicPointsGroup[0].split("\\|");
+                        String[] personPicPoint2 = personPicPointsGroup[1].split("\\|");
+                        String personPicPoints = personPicPoint1[i] + "#" + personPicPoint2[i] ;
+                        SignContractDTO signContractDTO1 = new SignContractDTO();
+                        BeanUtils.copyProperties(signContractDTO, signContractDTO1, "personName", "personPhone", "personIdCard", "personPicPoints","personPageNums");
+                        if (i >= names.length) {
+                            signContractDTO1.setPersonName("");
+                        } else {
+                            signContractDTO1.setPersonName(names[i]);
+                        }
+                        if (i >= phones.length) {
+                            signContractDTO1.setPersonPhone("");
+                        } else {
+                            signContractDTO1.setPersonPhone(phones[i]);
+                        }
+                        if (i >= idCards.length) {
+                            signContractDTO1.setPersonIdCard("");
+                        } else {
+                            signContractDTO1.setPersonIdCard(idCards[i]);
+                        }
+                        signContractDTO1.setPersonPageNums(personPageNums);
+                        signContractDTO1.setPersonPicPoints(personPicPoints);
+                        list.add(signContractDTO1);
+                    }
+                    PERSONSIGN.put(signContractDTO.getWqhth(), list);
+                    PERSONSIGNCURRENT.put(signContractDTO.getWqhth(), 0);
+                }
+            }else {
+            
+                for (int i = 0; i < personPageNumsGroup.length; i++) {
+                    String[] names = namesGroup[i].split("\\|");
+                    String[] phones = phonesGroup[i].split("\\|");
+                    String[] idCards = idCardsGroup[i].split("\\|");
+                    String[] personPicPoints = personPicPointsGroup[i].split("\\|");
+                    // 存储多个信息、位置
+                    for (int j = 0; j < personPicPoints.length; j++) {
+                        SignContractDTO signContractDTO1 = new SignContractDTO();
+                        signContractDTO1.setPersonPageNums(personPageNumsGroup[i]);
+                        BeanUtils.copyProperties(signContractDTO, signContractDTO1, "personName", "personPhone", "personIdCard", "personPicPoints","personPageNums");
+                        signContractDTO1.setPersonPicPoints(personPicPoints[j]);
+                        if (j >= names.length) {
+                            signContractDTO1.setPersonName("");
+                        } else {
+                            signContractDTO1.setPersonName(names[j]);
+                        }
+                        if (j >= phones.length) {
+                            signContractDTO1.setPersonPhone("");
+                        } else {
+                            signContractDTO1.setPersonPhone(phones[j]);
+                        }
+                        if (j >= idCards.length) {
+                            signContractDTO1.setPersonIdCard("");
+                        } else {
+                            signContractDTO1.setPersonIdCard(idCards[j]);
+                        }
+                        list.add(signContractDTO1);
+                    }
+                }
+                PERSONSIGN.put(signContractDTO.getWqhth(), list);
+                PERSONSIGNCURRENT.put(signContractDTO.getWqhth(), 0);
+            }
         } catch ( Exception e ) {
             dataResult.setStatus(400001);
             dataResult.setMsg("事件处理个人签署出错");
