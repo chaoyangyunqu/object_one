@@ -13,7 +13,6 @@ import com.shineyue.certSign.utils.ParamConvertUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -74,19 +73,6 @@ public class XinjiangCAServiceImpl{
     @Value("${xinjiangfc.fcSignCallbackURL}")
     private String fcSignCallbackURL;
 
-    @Async("asyncServiceExecutor")
-    public void test () {
-        /**
-         * 耗时试验
-         */
-        log.info("开始耗时等待");
-        try {
-            Thread.sleep(5000);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        log.info("耗时等待结束，线程结束");
-    }
 
     public <T> T dealSignCallbackPicOfPDF(SignCallbackDTO signCallbackDTO) {
         DataResult dataResult = new DataResult();
@@ -206,7 +192,7 @@ public class XinjiangCAServiceImpl{
                     log.info("骑缝章参数:{}",mirlsPrama);
                     log.info("开始进行骑缝章...");
                     DataResult mirleDataResult = HttpConnetUtils.httpConnet(entSCDTO,entMirleBaseUri,mirlsDataJsonStr);
-                    log.info("企业骑缝章已完成");
+                    log.info("企业骑缝章结束完成");
                     SignContractDTO mirleSCDTO = (SignContractDTO) mirleDataResult.getResults();
 
                     if (isCor) {
@@ -254,7 +240,7 @@ public class XinjiangCAServiceImpl{
                     ConvertUtil.base64StringToFile(mirleSCDTO.getInputPDF(),filePath);
                     return (T) mirleDataResult;
                 }
-                ConvertUtil.base64StringToFile(entSCDTO.getInputPDF(),filePath);
+//                ConvertUtil.base64StringToFile(entSCDTO.getInputPDF(),filePath);
             }
             return (T) dataResult;
         } catch (Exception e) {
@@ -270,19 +256,20 @@ public class XinjiangCAServiceImpl{
         log.info("个人签署开始操作,请等待...");
         try {
 
-            // 证书序列号
             String certSNHex = signContractDTO.getSerial();
+            log.info("证书序列号:{}",certSNHex);
             // 16进制转换十进制
             String certSNDec = new BigInteger(certSNHex, 16).toString(10);
-            // 网签合同号
             String wqhth = signContractDTO.getWqhth();
-            // 页码
+            log.info("网签合同号:{}",wqhth);
             String pageNums = signContractDTO.getPersonPageNums();
-            // 企业章大小
+            log.info("页码:{}",pageNums);
+            // 个人章章大小
             String picSizes = "(60,60)";
             // pdf信息
             String tempPDF = signContractDTO.getInputPDF();
-            String PDFJsonStr = "{'inputPDF':'" + tempPDF;
+            log.info("".equals(tempPDF) ? "个人签署的pdf文件为空":"个人签署的pdf文件为空");
+            String pDFJsonStr = "{'inputPDF':'" + tempPDF;
             // 盖章位置
             String picPoints = signContractDTO.getPersonPicPoints();
             // 参数信息
@@ -291,12 +278,7 @@ public class XinjiangCAServiceImpl{
                     + signContractDTO.getSubject()+"'},'callbackUrl':'"+signCallbackURL+"'}";
 
             // 盖章信息
-            String dataJsonStr = PDFJsonStr + pramaJsonStr ;
-            if ("".equals(tempPDF)) {
-                log.info("不存在个人盖章PDF文件");
-            }else {
-                log.info("存在个人盖章PDF文件");
-            }
+            String dataJsonStr = pDFJsonStr + pramaJsonStr ;
             log.info("个人签署参数信息:{}",pramaJsonStr);
             log.info("个人签署请求URL:{}",person);
             log.info("个人签署回调URL:{}",signCallbackURL);

@@ -57,7 +57,6 @@ public class ExecutorServiceImpl {
 
             DataResult dataResult = HttpConnetUtils.httpConnet(signContractDTO,person,dataJsonStr);
             SignContractDTO rollBackscDTO = (SignContractDTO) dataResult.getResults();
-            String wqhth1 = rollBackscDTO.getWqhth();
             log.info("个人签章处理结束");
             signContractDTO.setInputPDF(tempPDF);
             dataResult.setResults(signContractDTO);

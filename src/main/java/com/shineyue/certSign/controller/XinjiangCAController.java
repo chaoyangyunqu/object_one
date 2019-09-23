@@ -16,6 +16,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
 import java.io.File;
 
 /**
@@ -56,7 +57,7 @@ public class XinjiangCAController {
                 // 不存在则新建文件夹
                 dest.getParentFile().mkdirs();
             }
-            ConvertUtil.base64StringToFile(signCallbackDTO.getInputPDF(),filePath);
+//            ConvertUtil.base64StringToFile(signCallbackDTO.getInputPDF(),filePath);
             xinjiangCAService.dealCallbackPersonSign(signCallbackDTO);
         } catch ( Exception e ) {
             dataResult.setStatus(200001);
@@ -67,7 +68,7 @@ public class XinjiangCAController {
     }
 
     @PostMapping(value = "CA/ca/getPicOfPDF.serivce")
-    public DataResult getPicOfPDF(@RequestBody SignContractDTO signContractDTO, HttpServletRequest request){
+    public DataResult getPicOfPDF( @RequestBody @Valid SignContractDTO signContractDTO, HttpServletRequest request){
 
         DataResult dataResult = new DataResult();
 
@@ -143,7 +144,7 @@ public class XinjiangCAController {
     }
 
     @PostMapping(value = "CA/ca/getCertSN")
-    public DataResult getCertSN(@RequestBody MultipartFile file , PicBindCertCNVO picBindCertCNVO) {
+    public DataResult getCertSN(@RequestBody MultipartFile file ,PicBindCertCNVO picBindCertCNVO) {
         DataResult dataResult = new DataResult();
 
         try{

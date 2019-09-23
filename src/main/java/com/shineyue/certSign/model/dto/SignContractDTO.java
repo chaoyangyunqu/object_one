@@ -2,7 +2,8 @@ package com.shineyue.certSign.model.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
-import lombok.ToString;
+
+import javax.validation.constraints.NotBlank;
 
 /**
  * @Description: TODO 网签合同数据传输对象
@@ -13,24 +14,29 @@ import lombok.ToString;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class SignContractDTO {
     /** 网签合同号 */
+    @NotBlank(message = "网签合同号不能为空!")
     private String wqhth;
 
     /** PDF文件 */
     private String inputPDF;
 
     /** key的序列号 */
+    @NotBlank(message = "证书序列号不能为空")
     private String serial;
 
     /** 对象名称 */
+    @NotBlank(message = "对象名称不能为空")
     private String subject;
 
     /** 用户类型(1.个人/2.企业/3.房管局) */
     private int type;
 
     /** 页码,可多个 */
+    @NotBlank(message = "页码不能为空")
     private String pageNums;
 
     /** 签章位置 */
+    @NotBlank(message = "企业/机构坐标位置不能为空")
     private String picPoints;
 
     /** 个人名称 */
