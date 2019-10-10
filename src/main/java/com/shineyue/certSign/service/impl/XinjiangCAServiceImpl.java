@@ -237,7 +237,7 @@ public class XinjiangCAServiceImpl{
                     SignContractDTO sp = PERSONSIGN.get(wqhth1).get(0);
                     executorService.dealPersonSignExecutor(sp,person,signCallbackURL);
                     mirleDataResult.setMsg("企业公章已完成，请进行个人签署");
-                    ConvertUtil.base64StringToFile(mirleSCDTO.getInputPDF(),filePath);
+//                    ConvertUtil.base64StringToFile(mirleSCDTO.getInputPDF(),filePath);
                     return (T) mirleDataResult;
                 }
 //                ConvertUtil.base64StringToFile(entSCDTO.getInputPDF(),filePath);
@@ -268,7 +268,7 @@ public class XinjiangCAServiceImpl{
             String picSizes = "(60,60)";
             // pdf信息
             String tempPDF = signContractDTO.getInputPDF();
-            log.info("".equals(tempPDF) ? "个人签署的pdf文件为空":"个人签署的pdf文件为空");
+            log.info("".equals(tempPDF) ? "个人签署的pdf文件为空":"个人签署的pdf文件不为空");
             String pDFJsonStr = "{'inputPDF':'" + tempPDF;
             // 盖章位置
             String picPoints = signContractDTO.getPersonPicPoints();
@@ -315,6 +315,9 @@ public class XinjiangCAServiceImpl{
         SignContractDTO signContractDTO;
         String wqhth = "";
         String inputPDF = "";
+        String isSign = signCallbackDTO.getIsSign();
+        String cancel  = "-2";
+        String refuse  = "0";
         try{
             wqhth = signCallbackDTO.getWqhth();
             log.info("回调合同号:{}",wqhth);
@@ -329,8 +332,16 @@ public class XinjiangCAServiceImpl{
                         if (!"".equals(inputPDF)) {
                             signContractDTO.setInputPDF(inputPDF);
                         }
+                        // 合同撤销/拒绝签署
+                        if (isSign.equals(cancel) || isSign.equals(refuse)) {
+                            PERSONSIGN.remove(wqhth);
+                            PERSONSIGNCURRENT.remove(wqhth);
+                            return dealSignCallbackPicOfPDF(signCallbackDTO);
+                        }
                         dataResult = dealPersonSign(signContractDTO);
                         if (100001 != dataResult.getStatus()) {
+                            PERSONSIGN.remove(wqhth);
+                            PERSONSIGNCURRENT.remove(wqhth);
                             log.info("回调个人签署异常:{}",dataResult.getError());
                         }
                         PERSONSIGNCURRENT.put(wqhth,current + 1);

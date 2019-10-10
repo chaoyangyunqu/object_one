@@ -9,6 +9,9 @@ import org.springframework.stereotype.Component;
 
 import java.math.BigInteger;
 
+import static com.shineyue.certSign.service.impl.XinjiangCAServiceImpl.PERSONSIGN;
+import static com.shineyue.certSign.service.impl.XinjiangCAServiceImpl.PERSONSIGNCURRENT;
+
 /**
  * @Description: TODO 异步实现类
  * @author: luofuwei
@@ -56,6 +59,14 @@ public class ExecutorServiceImpl {
             log.info("个人签署回调URL:{}",signCallbackURL);
 
             DataResult dataResult = HttpConnetUtils.httpConnet(signContractDTO,person,dataJsonStr);
+            if (!dataResult.isSuccess()) {
+                if (PERSONSIGN.containsKey(wqhth)) {
+                    PERSONSIGN.remove(wqhth);
+                }
+                if (PERSONSIGNCURRENT.containsKey(wqhth)) {
+                    PERSONSIGNCURRENT.remove(wqhth);
+                }
+            }
             SignContractDTO rollBackscDTO = (SignContractDTO) dataResult.getResults();
             log.info("个人签章处理结束");
             signContractDTO.setInputPDF(tempPDF);

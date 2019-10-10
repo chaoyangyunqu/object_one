@@ -23,12 +23,13 @@ import java.nio.charset.StandardCharsets;
 public class HttpConnetUtils {
     public static DataResult httpConnet(SignContractDTO signContractDTO,String url, String dataJsonStr){
         DataResult dataResult = new DataResult();
+        HttpURLConnection httpConnection = null;
         String msg = "";
         log.info("{}远程连接中，请稍后...",url);
         try {
             URL targetUrl = new URL(url);
 
-            HttpURLConnection httpConnection = (HttpURLConnection) targetUrl
+            httpConnection = (HttpURLConnection) targetUrl
                     .openConnection();
             log.info("{}远程已连接，开始进行操作...",url);
             // 超时设置
@@ -72,7 +73,6 @@ public class HttpConnetUtils {
                 dataResult.setMsg("请求成功");
                 dataResult.setSuccess(true);
                 dataResult.setResults(signContractDTO);
-                return dataResult;
             }
             httpConnection.disconnect();
             log.info("已完毕连接");
@@ -82,6 +82,10 @@ public class HttpConnetUtils {
             dataResult.setMsg("请求失败");
             dataResult.setError("失败信息:"+e.getMessage());
             return dataResult;
+        } finally {
+            if (httpConnection != null) {
+                httpConnection.disconnect();
+            }
         }
     }
 

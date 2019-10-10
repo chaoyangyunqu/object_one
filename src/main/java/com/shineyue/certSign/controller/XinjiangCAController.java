@@ -39,12 +39,7 @@ public class XinjiangCAController {
 
         logger.info("收到来自[{}]的请求（个人签署回调）", IpAddressUtil.getIpAddress(request));
         try {
-            String inputPDF = signCallbackDTO.getInputPDF();
-            if (null != inputPDF && !"".equals(inputPDF)) {
-                logger.info("存在inputPDF");
-            }else {
-                logger.info("不存在inputPDF:{}",signCallbackDTO.toString());
-            }
+
             // 文件存放路径
             String basePath = System.getProperty("user.dir") + "/signPDF";
             String wqhth = signCallbackDTO.getWqhth();
@@ -57,8 +52,14 @@ public class XinjiangCAController {
                 // 不存在则新建文件夹
                 dest.getParentFile().mkdirs();
             }
-//            ConvertUtil.base64StringToFile(signCallbackDTO.getInputPDF(),filePath);
-            xinjiangCAService.dealCallbackPersonSign(signCallbackDTO);
+            String inputPDF = signCallbackDTO.getInputPDF();
+            if (null != inputPDF && !"".equals(inputPDF)) {
+                logger.info("存在inputPDF");
+                ConvertUtil.base64StringToFile(inputPDF,filePath);
+            }else {
+                logger.info("不存在inputPDF:{}",signCallbackDTO.toString());
+            }
+            dataResult = xinjiangCAService.dealCallbackPersonSign(signCallbackDTO);
         } catch ( Exception e ) {
             dataResult.setStatus(200001);
             dataResult.setMsg("请求失败!");
